@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sankhya · Mapa de Saúde VMO</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1c8c52;--gl:#27c468;--gd:#0a2e18;
+  --bg:#040905;--bg2:#060e07;--bg3:#080f09;
+  --s:#0d1a0f;--s2:#122016;
+  --b:rgba(28,140,82,.15);--b2:rgba(28,140,82,.38);
+  --t:#e2f0e6;--t2:#6fa87a;--t3:#3a5443;
+  --sv:#22c55e;--at:#f59e0b;--cr:#ef4444;--ns:#4b5a6b;
+}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t)}
+
+/* LOADING */
+#ld{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#ld.out{opacity:0;pointer-events:none}
+.ll{font-size:52px;font-weight:700;color:var(--gl);letter-spacing:-2px;margin-bottom:6px}
+.ls{font-size:12px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.15em;margin-bottom:40px}
+.lbar{width:240px;height:2px;background:var(--s2);border-radius:2px;overflow:hidden}
+.lfill{height:100%;background:var(--gl);border-radius:2px;animation:lw 1.6s ease forwards}
+@keyframes lw{0%{width:0}100%{width:100%}}
+
+/* HEADER */
+header{
+  height:70px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;border-bottom:1px solid var(--b);
+  background:linear-gradient(180deg,#060f08 0%,#04090500 100%);
+  position:relative;z-index:1000;flex-shrink:0
+}
+.la{display:flex;align-items:center;gap:16px}
+.logo{
+  width:44px;height:44px;background:var(--g);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:20px;color:#fff;flex-shrink:0;
+  box-shadow:0 0 20px rgba(28,140,82,.5)
+}
+.ln{font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--t)}
+.lsub{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.12em;margin-top:3px;text-transform:uppercase}
+.hr{display:flex;align-items:center;gap:16px}
+
+/* AUTO-REFRESH */
+.auto-label{display:flex;align-items:center;gap:9px;cursor:default;user-select:none}
+.auto-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);transition:background .3s,box-shadow .3s;flex-shrink:0}
+.auto-dot.on{background:var(--gl);box-shadow:0 0 8px var(--gl);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.auto-label span{font-size:12px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.05em;white-space:nowrap}
+.auto-cd{font-size:12px;color:var(--gl);font-family:'DM Mono',monospace;min-width:34px}
+.toggle-wrap{cursor:pointer;padding:2px 0}
+.toggle-track{width:40px;height:20px;border-radius:10px;background:var(--s2);border:1px solid var(--b);position:relative;transition:all .25s}
+.toggle-track.on{background:var(--gd);border-color:var(--g)}
+.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--t3);position:absolute;top:2px;left:2px;transition:all .25s}
+.toggle-track.on .toggle-thumb{transform:translateX(20px);background:var(--gl)}
+
+/* REFRESH BUTTON */
+.rbtn{
+  background:var(--g);border:none;color:#fff;
+  padding:10px 22px;border-radius:9px;font-size:14px;
+  font-family:inherit;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:all .2s;
+  box-shadow:0 0 20px rgba(28,140,82,.4),0 2px 8px rgba(0,0,0,.4)
+}
+.rbtn:hover{background:var(--gl);box-shadow:0 0 28px rgba(39,196,104,.5);transform:translateY(-1px)}
+.rbtn:active{transform:translateY(0)}
+.si{font-size:16px;display:inline-block}
+.si.go{animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* COUNTER BAR — o coração do dashboard */
+.cbar{
+  display:flex;border-bottom:1px solid var(--b);
+  background:var(--bg2);position:relative;z-index:1000;flex-shrink:0;
+  height:90px
+}
+.ci{
+  flex:1;display:flex;align-items:center;gap:14px;
+  padding:0 24px;border-right:1px solid var(--b);
+  cursor:pointer;transition:background .15s;position:relative;overflow:hidden
+}
+.ci:last-child{border-right:none}
+.ci::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 4%,transparent),transparent);
+  opacity:0;transition:opacity .2s
+}
+.ci:hover::before{opacity:1}
+.ci.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--cc);box-shadow:0 0 12px var(--cc)}
+.ci.on::before{opacity:1}
+/* Big glow dot */
+.cdot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--cc);box-shadow:0 0 12px var(--cc),0 0 24px color-mix(in srgb,var(--cc) 40%,transparent);
+  flex-shrink:0;animation:dotpulse 3s ease-in-out infinite
+}
+@keyframes dotpulse{0%,100%{box-shadow:0 0 8px var(--cc),0 0 16px color-mix(in srgb,var(--cc) 30%,transparent)}50%{box-shadow:0 0 14px var(--cc),0 0 28px color-mix(in srgb,var(--cc) 50%,transparent)}}
+.clb{font-size:15px;color:var(--t2);font-weight:400;letter-spacing:.01em}
+.cv{
+  font-size:46px;font-weight:700;
+  color:var(--cc);font-family:'DM Mono',monospace;
+  line-height:1;letter-spacing:-2px;
+  text-shadow:0 0 30px color-mix(in srgb,var(--cc) 50%,transparent)
+}
+.cright{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto;gap:2px}
+.cpct{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;color:var(--cc);opacity:.7;letter-spacing:-.5px;line-height:1}
+
+/* LAYOUT */
+.wrap{display:flex;height:calc(100vh - 160px)}
+
+/* SIDEBAR */
+.sb{
+  width:300px;flex-shrink:0;border-right:1px solid var(--b);
+  display:flex;flex-direction:column;background:var(--bg2);overflow:hidden;z-index:500
+}
+.ss{padding:16px 18px;border-bottom:1px solid var(--b);flex-shrink:0}
+.stit{
+  font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.14em;
+  color:var(--t3);text-transform:uppercase;margin-bottom:10px
+}
+.tr{display:flex;gap:6px}
+.tb{
+  flex:1;padding:9px 6px;border-radius:7px;font-size:12px;
+  border:1px solid var(--b);background:transparent;color:var(--t2);
+  cursor:pointer;transition:all .15s;font-family:inherit;text-align:center;font-weight:500
+}
+.tb:hover{background:var(--s);border-color:var(--b2)}
+.tb.on{background:var(--gd);border-color:var(--g);color:#4ade80;font-weight:600}
+.gsel{
+  width:100%;padding:9px 12px;border-radius:7px;background:var(--s);
+  border:1px solid var(--b);color:var(--t);font-size:13px;
+  font-family:inherit;outline:none;cursor:pointer;transition:border-color .15s
+}
+.gsel:focus{border-color:var(--b2)}
+.gsel option{background:var(--bg3)}
+.sf{display:flex;flex-direction:column;gap:6px}
+.sfb{
+  display:flex;align-items:center;gap:9px;background:transparent;
+  border:1px solid var(--b);color:var(--t2);padding:10px 12px;
+  border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
+  transition:all .15s;text-align:left;width:100%;position:relative;overflow:hidden
+}
+.sfb::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:var(--bar-w,0%);background:var(--sc);opacity:.08;
+  transition:width .4s ease;pointer-events:none
+}
+.sfb:hover{border-color:var(--b2);background:var(--s)}
+.sfb.on{border-color:var(--sc);color:var(--sc);background:color-mix(in srgb,var(--sc) 10%,transparent)}
+.sfd{width:9px;height:9px;border-radius:50%;background:var(--sc);flex-shrink:0;box-shadow:0 0 6px var(--sc)}
+.sfc{margin-left:auto;font-family:'DM Mono',monospace;font-size:13px;opacity:.8;font-weight:600}
+.uh{padding:12px 18px 6px;flex-shrink:0}
+.uw{flex:1;overflow-y:auto;padding:4px 8px 10px}
+.uw::-webkit-scrollbar{width:3px}
+.uw::-webkit-scrollbar-thumb{background:var(--s2);border-radius:3px}
+.ui{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;
+  border-radius:7px;cursor:pointer;transition:all .12s;margin-bottom:2px
+}
+.ui:hover{background:var(--s)}
+.ui.hl{background:var(--s2);outline:1px solid var(--b2)}
+.ud{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.un{font-size:12px;flex:1;line-height:1.3;color:var(--t)}
+.ub{
+  font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;
+  border-radius:3px;background:var(--s2);color:var(--t3);flex-shrink:0
+}
+
+/* MAP */
+.ma{flex:1;position:relative;overflow:hidden}
+#map{width:100%;height:100%}
+/* Tiles bem escuros pra contrastar com os pins coloridos */
+.leaflet-tile{filter:brightness(.38) saturate(.25) hue-rotate(100deg) contrast(1.05)}
+.custom-ctrl{display:flex;flex-direction:column;gap:4px;margin:12px 0 0 12px}
+.cmap-btn{
+  width:32px;height:32px;background:var(--bg2);border:1px solid var(--b2);
+  color:var(--gl);border-radius:8px;font-size:18px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-family:inherit;line-height:1;
+  box-shadow:0 2px 8px rgba(0,0,0,.4)
+}
+.cmap-btn:hover{background:var(--s2);border-color:var(--gl);color:#fff}
+.cmap-btn:active{transform:scale(.93)}
+.cmap-center{border-top:1px solid var(--b);margin-top:2px}
+.leaflet-container{background:#030806}
+.leaflet-control-zoom{display:none}
+.ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
+.cbtn{
+  width:34px;height:34px;background:var(--bg2);border:1px solid var(--b2);
+  color:var(--gl);border-radius:8px;font-size:20px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.5)
+}
+.cbtn:hover{background:var(--s2);color:#fff;border-color:var(--gl)}
+.cbtn:active{transform:scale(.92)}
+.cbtn-c{font-size:14px;border-top:1px solid var(--b);padding-top:5px;margin-top:3px}
+.leaflet-control-attribution{background:rgba(3,8,5,.9)!important;color:var(--t3)!important;font-size:9px!important;border-top:1px solid var(--b)!important}
+.leaflet-control-attribution a{color:var(--t3)!important}
+
+/* PINS */
+.pin-wrap{display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:opacity .25s;transform-origin:bottom center}
+.pin-wrap.dim{opacity:.1;pointer-events:none}
+.pin-wrap:not(.dim):hover{filter:brightness(1.3);transform:scale(1.25) translateY(-4px) rotate(var(--pin-rot,0deg))}
+.pin-flag{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:2px solid rgba(0,0,0,.4);
+  transition:box-shadow .15s
+}
+.pin-flag-inner{font-weight:700;font-family:'DM Mono',monospace;color:#fff;line-height:1}
+.pin-stem{width:2px;border-radius:0 0 2px 2px;margin-top:-1px;opacity:.8}
+.pin-shadow{width:10px;height:4px;border-radius:50%;background:rgba(0,0,0,.5);margin-top:2px;filter:blur(2px)}
+/* Só crítico pulsa */
+@keyframes pulse{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.5),0 0 0 0 rgba(239,68,68,.7)}70%{box-shadow:0 2px 8px rgba(0,0,0,.5),0 0 0 12px rgba(239,68,68,0)}}
+.pin-critico .pin-flag{animation:pulse 1.8s ease-in-out infinite}
+
+/* POPUP */
+.leaflet-popup-content-wrapper{
+  background:rgba(4,9,5,.97)!important;
+  border:1px solid rgba(28,140,82,.5)!important;
+  border-radius:14px!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.85),0 0 0 1px rgba(28,140,82,.1)!important;
+  padding:0!important;color:var(--t)!important
+}
+.leaflet-popup-tip-container{display:none!important}
+.leaflet-popup-content{margin:16px 18px!important;min-width:240px;max-width:270px}
+.leaflet-popup-close-button{color:var(--t3)!important;font-size:20px!important;top:10px!important;right:12px!important;line-height:1!important;padding:0!important}
+.leaflet-popup-close-button:hover{color:var(--gl)!important;background:none!important}
+.tnm{font-size:14px;font-weight:600;line-height:1.35;padding-right:16px;color:var(--t);margin-bottom:9px}
+.tpp{display:flex;gap:5px;margin-bottom:8px}
+.tpi{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:4px}
+.pbp{background:rgba(59,130,246,.15);color:#60a5fa}
+.pdc{background:rgba(168,85,247,.15);color:#c084fc}
+.trow{font-size:12px;color:var(--t3);margin-bottom:4px}
+.trow span{color:var(--t2)}
+.tst{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:5px 10px;border-radius:6px;margin:6px 0 9px}
+.tob{font-size:12.5px;color:var(--t2);line-height:1.65;border-top:1px solid var(--b);padding-top:9px}
+.tnob{font-size:12px;color:var(--t3);font-style:italic;border-top:1px solid var(--b);padding-top:9px}
+
+/* Scanline overlay sutil pra dar feel de monitor */
+.ma::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:10;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+}
+</style>
+</head>
+<body>
+
+<div id="ld">
+  <div class="ll">SANKHYA</div>
+  <div class="ls">MAPA DE SAÚDE VMO</div>
+  <div class="lbar"><div class="lfill"></div></div>
+</div>
+
+<header>
+  <div class="la">
+    <div class="logo">S</div>
+    <div>
+      <div class="ln">Sankhya · Mapa de Saúde VMO</div>
+      <div class="lsub">VMO</div>
+    </div>
+  </div>
+  <div class="hr">
+    <label class="auto-label" id="auto-label">
+      <span class="auto-dot" id="auto-dot"></span>
+      <span id="auto-txt">Auto-atualizar</span>
+      <div class="toggle-wrap" onclick="toggleAuto()">
+        <div class="toggle-track" id="tog-track">
+          <div class="toggle-thumb" id="tog-thumb"></div>
+        </div>
+      </div>
+      <span class="auto-cd" id="auto-cd"></span>
+    </label>
+    <div id="last-upd" style="
+  display:flex;flex-direction:column;align-items:flex-end;gap:1px;
+  font-family:'DM Mono',monospace;line-height:1.3
+">
+  <span style="font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase">Última leitura</span>
+  <span id="last-upd-val" style="font-size:13px;color:var(--t2)">—</span>
+</div>
+<button class="rbtn" onclick="manualRefresh()"><span class="si" id="si">↻</span> Atualizar</button>
+  </div>
+</header>
+
+<div class="cbar">
+  <div class="ci" style="--cc:var(--sv)" data-s="Saudável" onclick="tS('Saudável')">
+    <span class="cdot"></span>
+    <span class="clb">Saudável</span>
+    <div class="cright">
+      <span class="cv" id="csv">0</span>
+      <span class="cpct" id="pcsv">—</span>
+    </div>
+  </div>
+  <div class="ci" style="--cc:var(--at)" data-s="Atenção" onclick="tS('Atenção')">
+    <span class="cdot"></span>
+    <span class="clb">Atenção</span>
+    <div class="cright">
+      <span class="cv" id="cat">0</span>
+      <span class="cpct" id="pcat">—</span>
+    </div>
+  </div>
+  <div class="ci" style="--cc:var(--cr)" data-s="Crítico" onclick="tS('Crítico')">
+    <span class="cdot"></span>
+    <span class="clb">Crítico</span>
+    <div class="cright">
+      <span class="cv" id="ccr">0</span>
+      <span class="cpct" id="pccr">—</span>
+    </div>
+  </div>
+  <div class="ci" style="--cc:var(--ns)" data-s="" onclick="tS('')">
+    <span class="cdot"></span>
+    <span class="clb">Sem status</span>
+    <div class="cright">
+      <span class="cv" id="cns">0</span>
+      <span class="cpct" id="pcns">—</span>
+    </div>
+  </div>
+  <div class="ci" style="--cc:var(--gl);border-right:none">
+    <span class="cdot"></span>
+    <span class="clb">Total</span>
+    <div class="cright">
+      <span class="cv" id="ctot">0</span>
+      <span class="cpct" id="pctot" style="color:var(--t3);font-size:14px;font-weight:400;letter-spacing:.03em;text-transform:uppercase">unidades</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="sb">
+    <div class="ss">
+      <div class="stit">Tipo de Unidade</div>
+      <div class="tr">
+        <button class="tb on" onclick="setT('ALL',this)">Todos</button>
+        <button class="tb" onclick="setT('BP',this)">BP</button>
+        <button class="tb" onclick="setT('DC',this)">Delivery Center</button>
+      </div>
+    </div>
+    <div class="ss">
+      <div class="stit">Gerente Regional</div>
+      <select class="gsel" id="gsel" onchange="setG(this.value)">
+        <option value="ALL">Todos os GRPs</option>
+      </select>
+    </div>
+    <div class="ss">
+      <div class="stit">Status</div>
+      <div class="sf">
+        <button class="sfb" style="--sc:var(--sv)" data-s="Saudável" onclick="tS('Saudável')"><span class="sfd"></span>Saudável<span class="sfc" id="fcs">0</span></button>
+        <button class="sfb" style="--sc:var(--at)" data-s="Atenção" onclick="tS('Atenção')"><span class="sfd"></span>Atenção<span class="sfc" id="fca">0</span></button>
+        <button class="sfb" style="--sc:var(--cr)" data-s="Crítico" onclick="tS('Crítico')"><span class="sfd"></span>Crítico<span class="sfc" id="fcc">0</span></button>
+        <button class="sfb" style="--sc:var(--ns)" data-s="" onclick="tS('')"><span class="sfd"></span>Sem status<span class="sfc" id="fcn">0</span></button>
+      </div>
+    </div>
+    <div class="uh"><div class="stit">Visíveis &nbsp;<span id="vc" style="color:var(--gl)">0</span></div></div>
+    <div class="uw" id="ulist"></div>
+  </div>
+  <div class="ma"><div id="map"></div></div>
+</div>
+
+<script>
+const SHEET='1Fi9Y3aiAJdIaaAboqe2eK_g95YGHXppV';
+const SC={'Saudável':'#22c55e','Atenção':'#f59e0b','Crítico':'#ef4444','':'#475569'};
+
+const GEO={
+  // SP hexágono r=0.55°
+  'BP SP MOEMA':[-23.0,-46.75],
+  'BP SÃO PAULO BERRINI':[-23.275,-46.274],
+  'BP ABC PAULISTA':[-23.825,-46.274],
+  'BP SUDESTE PAULISTA':[-24.1,-46.75],
+  'BP ALPHAVILLE':[-23.825,-47.226],
+  'BP JUNDIAÍ':[-23.275,-47.226],
+  // SC/PR quadrado r=0.40°
+  'BP CURITIBA':[-26.017,-49.283],
+  'BP NORTE CATARINENSE':[-26.017,-48.717],
+  'BP LITORAL CATARINENSE':[-26.583,-48.717],
+  'BP SANTA CATARINA':[-26.583,-49.283],
+  // DCs Uberlândia pentágono r=0.28°
+  'Delivery Center - Andreia':[-18.638,-48.277],
+  'Delivery Center - Kassius':[-18.831,-48.011],
+  'Delivery Center - Carol':[-19.145,-48.112],
+  'Delivery Center - Enterprise':[-19.145,-48.442],
+  'Delivery Center - Thiago':[-18.831,-48.543],
+  // Individuais
+  'BP RECIFE':[-8.054,-34.881],
+  'BP VITORIA DA CONQUISTA':[-14.866,-40.839],
+  'BP BANDEIRANTES':[-23.107,-50.353],
+  'BP BH PAMPULHA':[-19.917,-43.938],
+  'BP CEARÁ':[-3.717,-38.543],
+  'BP MARANHÃO':[-2.530,-44.302],
+  'BP PARÁ':[-1.456,-48.480],
+  'BP RIO DE JANEIRO':[-22.907,-43.177],
+  'BP INTERIOR PARANAENSE':[-23.310,-51.162],
+  'BP MATO GROSSO':[-15.601,-56.097],
+  'BP MATO GROSSO DO SUL':[-20.443,-54.617],
+  'BP NORTE DE MINAS':[-16.721,-43.861],
+  'BP RIO GRANDE DO NORTE':[-5.793,-35.209],
+}
+
+// Pin tilt angles (degrees from vertical) — fans out overlapping clusters
+const GEO_ROT={
+  // SP hexágono — each pin leans outward from SP center
+  'BP SP MOEMA':0,           // top — straight up
+  'BP SÃO PAULO BERRINI':30, // top-right — lean right
+  'BP ABC PAULISTA':60,      // bottom-right — lean more right  
+  'BP SUDESTE PAULISTA':0,   // bottom — straight (inverted via position)
+  'BP ALPHAVILLE':-60,       // bottom-left — lean left
+  'BP JUNDIAÍ':-30,          // top-left — lean left
+  // SC/PR quad
+  'BP CURITIBA':-25,
+  'BP NORTE CATARINENSE':25,
+  'BP LITORAL CATARINENSE':25,
+  'BP SANTA CATARINA':-25,
+  // DCs pentagon
+  'Delivery Center - Andreia':0,
+  'Delivery Center - Kassius':20,
+  'Delivery Center - Carol':35,
+  'Delivery Center - Enterprise':-35,
+  'Delivery Center - Thiago':-20,
+};
+
+
+const CITY={
+  'BP SP MOEMA':'São Paulo','BP RECIFE':'Recife','BP VITORIA DA CONQUISTA':'Vitória da Conquista',
+  'BP ABC PAULISTA':'Santo André','BP ALPHAVILLE':'Alphaville','BP BANDEIRANTES':'Bandeirantes',
+  'BP BH PAMPULHA':'Belo Horizonte','BP JUNDIAÍ':'Jundiaí','BP SUDESTE PAULISTA':'Sorocaba',
+  'BP SÃO PAULO BERRINI':'São Paulo','BP CEARÁ':'Fortaleza','BP MARANHÃO':'São Luís',
+  'BP PARÁ':'Belém','BP RIO DE JANEIRO':'Rio de Janeiro','BP CURITIBA':'Curitiba',
+  'BP INTERIOR PARANAENSE':'Londrina','BP LITORAL CATARINENSE':'Balneário Camboriú',
+  'BP MATO GROSSO':'Cuiabá','BP MATO GROSSO DO SUL':'Campo Grande',
+  'BP NORTE CATARINENSE':'Joinville','BP NORTE DE MINAS':'Montes Claros',
+  'BP RIO GRANDE DO NORTE':'Natal','BP SANTA CATARINA':'Florianópolis',
+  'Delivery Center - Andreia':'Uberlândia','Delivery Center - Kassius':'Uberlândia',
+  'Delivery Center - Carol':'Uberlândia','Delivery Center - Enterprise':'Uberlândia',
+  'Delivery Center - Thiago':'Uberlândia',
+};
+
+let allU=[],aS=new Set(),aT='ALL',aG='ALL',hl=null;
+let map, mkMap={};
+let openPopup=null; // controla qual popup está aberto
+
+function initMap(){
+  map=L.map('map',{center:[-15.0,-53.0],zoom:4,zoomControl:false,minZoom:3,maxZoom:13});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19
+  }).addTo(map);
+  map.on('click',()=>closeOpenPopup());
+  // Fit Brazil fully visible
+  setTimeout(()=>map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28]}),200);
+  // Custom controls: zoom + recenter
+  const ctrl=L.control({position:'topleft'});
+  ctrl.onAdd=function(){
+    const d=L.DomUtil.create('div','ctrlbox');
+    d.innerHTML=
+      '<button class="cbtn" onclick="map.zoomIn()" title="Aproximar">+</button>'+
+      '<button class="cbtn" onclick="map.zoomOut()" title="Afastar">−</button>'+
+      '<button class="cbtn cbtn-c" onclick="recenter()" title="Ver Brasil completo">'+
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+
+          '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>'+
+          '<line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'+
+        '</svg>'+
+      '</button>';
+    L.DomEvent.disableClickPropagation(d);
+    return d;
+  };
+  ctrl.addTo(map);
+}
+
+function recenter(){
+  map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28],animate:true});
+}
+
+function closeOpenPopup(){
+  if(openPopup){ openPopup.closePopup(); openPopup=null; }
+}
+
+async function loadData(){
+  const si=document.getElementById('si');
+  si.classList.add('go');
+
+  // Multiple strategies - try each until one returns valid CSV data
+  const strategies=[
+    // Strategy 1: gviz endpoint (most reliable, no auth required)
+    async()=>{
+      const url=`https://docs.google.com/spreadsheets/d/${SHEET}/gviz/tq?tqx=out:csv&gid=0&t=${Date.now()}`;
+      const r=await fetchWithTimeout(url,8000);
+      const txt=await r.text();
+      if(txt.includes(',')) return txt;
+      throw new Error('not csv');
+    },
+    // Strategy 2: allorigins proxy
+    async()=>{
+      const url=encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET}/export?format=csv&gid=0`);
+      const r=await fetchWithTimeout(`https://api.allorigins.win/get?url=${url}&t=${Date.now()}`,8000);
+      const j=await r.json();
+      const txt=j.contents||'';
+      if(txt.includes(',')) return txt;
+      throw new Error('empty');
+    },
+    // Strategy 3: corsproxy.io
+    async()=>{
+      const url=encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET}/export?format=csv&gid=0`);
+      const r=await fetchWithTimeout(`https://corsproxy.io/?${url}&t=${Date.now()}`,8000);
+      const txt=await r.text();
+      if(txt.includes(',')) return txt;
+      throw new Error('empty');
+    },
+  ];
+
+  let loaded=false;
+  for(const strategy of strategies){
+    try{
+      const txt=await strategy();
+      const rows=parseCSV(txt);
+      const units=rows
+        .filter(r=>r[1]&&r[1].trim()&&r[1].trim()!=='Unidade'&&r[0].trim()!=='#'&&!r[1].includes('<')&&r[1].trim().length<60&&r[0].trim()!==''&&!isNaN(Number(r[0].trim())))
+        .map(r=>({
+          nome:r[1]?.trim(),
+          tipo:r[2]?.trim()||'BP',
+          grp:r[3]?.trim()||'',
+          termo:r[4]?.trim()||'',
+          obs:r[5]?.trim()||''
+        }));
+      if(units.length>=5){
+        allU=units;
+        showStatus('ok');
+        loaded=true;
+        break;
+      }
+    }catch(e){
+      console.warn('Strategy failed:',e.message);
+    }
+  }
+
+  if(!loaded){
+    showStatus('offline');
+    showMapError();
+  }
+
+  si.classList.remove('go');
+  buildUI();
+}
+
+function fetchWithTimeout(url,ms){
+  return Promise.race([
+    fetch(url,{cache:'no-store'}),
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout '+ms+'ms')),ms))
+  ]);
+}
+
+
+function parseCSV(txt){
+  return txt.split('\n').map(l=>{
+    const c=[];let cur='',iq=false;
+    for(const ch of l){if(ch==='"')iq=!iq;else if(ch===','&&!iq){c.push(cur);cur='';}else cur+=ch;}
+    c.push(cur);return c;
+  });
+}
+
+function fallback(){
+  // SEM dados locais — exibe erro claro
+  allU=[];
+  showStatus('offline');
+  const val=document.getElementById('last-upd-val');
+  if(val){
+    val.style.color='var(--cr)';
+    val.textContent='ERRO — sem conexão com a planilha';
+    val.style.fontSize='11px';
+  }
+  // Mostra overlay de erro no mapa
+  const ma=document.getElementById('map');
+  let err=document.getElementById('map-err');
+  if(!err){
+    err=document.createElement('div');
+    err.id='map-err';
+    err.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(4,9,5,.92);z-index:999;gap:12px';
+    err.innerHTML=`
+      <div style="font-size:40px">⚠️</div>
+      <div style="font-size:18px;font-weight:600;color:#ef4444">Não foi possível ler a planilha</div>
+      <div style="font-size:13px;color:#7aa887;text-align:center;max-width:360px;line-height:1.6">
+        O mapa só funciona publicado online (Netlify, etc).<br>
+        Abrindo como arquivo local o browser bloqueia o acesso ao Google Sheets.
+      </div>
+      <button onclick="manualRefresh();document.getElementById('map-err')?.remove()" style="
+        background:#1c8c52;border:none;color:#fff;padding:10px 24px;
+        border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;margin-top:8px
+      ">↻ Tentar novamente</button>`;
+    document.querySelector('.ma').style.position='relative';
+    document.querySelector('.ma').appendChild(err);
+  }
+}
+
+
+function buildUI(){
+  const s=allU.filter(u=>u.termo==='Saudável').length,
+        a=allU.filter(u=>u.termo==='Atenção').length,
+        c=allU.filter(u=>u.termo==='Crítico').length,
+        n=allU.filter(u=>!u.termo).length;
+  ['csv','fcs'].forEach(id=>document.getElementById(id).textContent=s);
+  ['cat','fca'].forEach(id=>document.getElementById(id).textContent=a);
+  ['ccr','fcc'].forEach(id=>document.getElementById(id).textContent=c);
+  ['cns','fcn'].forEach(id=>document.getElementById(id).textContent=n);
+  document.getElementById('ctot').textContent=allU.length;
+  // init percentages
+  const _tot=allU.length;
+  const _pct=v=>_tot>0?Math.round(v/(_tot)*100)+'%':'—';
+  document.getElementById('pcsv').textContent=_pct(s);
+  document.getElementById('pcat').textContent=_pct(a);
+  document.getElementById('pccr').textContent=_pct(c);
+  document.getElementById('pcns').textContent=_pct(n);
+  const grps=[...new Set(allU.map(u=>u.grp).filter(Boolean))].sort();
+  const sel=document.getElementById('gsel');
+  sel.innerHTML='<option value="ALL">Todos os GRPs</option>';
+  grps.forEach(g=>{const o=document.createElement('option');o.value=o.textContent=g;sel.appendChild(o);});
+  createAllMarkers();
+  renderAll();
+}
+
+function getVis(){
+  return new Set(allU.filter(u=>{
+    if(aT!=='ALL'&&u.tipo!==aT)return false;
+    if(aG!=='ALL'&&u.grp!==aG)return false;
+    if(aS.size>0&&!aS.has(u.termo))return false;
+    return true;
+  }).map(u=>u.nome));
+}
+
+function makeIcon(u){
+  const col=SC[u.termo]||SC[''];
+  const isDC=u.tipo==='DC';
+  const isCritico=u.termo==='Crítico';
+  const fs=24;
+  const stemH=18;
+  const rot=GEO_ROT[u.nome]||0; // degrees: 0=straight up, positive=tilt right
+  const totalH=fs+stemH+8;
+  const totalW=fs+8;
+
+  // The pin-flag base rotation is -45deg (teardrop pointing down-left)
+  // We add extra rotation to tilt the whole pin
+  return L.divIcon({
+    className:'',
+    html:`<div class="${'pin-wrap'}${isCritico?' pin-critico':''}"
+      style="width:${totalH}px;height:${totalH}px;align-items:center;transform-origin:bottom center;transform:rotate(${rot}deg)">
+      <div class="pin-flag" style="width:${fs}px;height:${fs}px;background:${col};color:${col}">
+        <span class="pin-flag-inner" style="font-size:${isDC?'6.5':'7'}px;letter-spacing:.02em;transform:rotate(${45-rot}deg)">${isDC?'DC':'BP'}</span>
+      </div>
+      <div class="pin-stem" style="height:${stemH}px;background:${col}"></div>
+      <div class="pin-shadow"></div>
+    </div>`,
+    iconSize:[totalH,totalH],
+    iconAnchor:[totalH/2,totalH-2],
+    popupAnchor:[0,-(totalH)],
+  });
+}
+
+function buildPopup(u){
+  const col=SC[u.termo]||SC[''];
+  const sl=u.termo||'Sem status';
+  const city=CITY[u.nome]||'';
+  return `<div class="tnm">${u.nome}</div>
+    <div class="tpp"><span class="tpi ${u.tipo==='DC'?'pdc':'pbp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
+    <div class="trow">GRP: <span>${u.grp||'—'}</span></div>
+    ${city?`<div class="trow" style="margin-bottom:6px">Cidade: <span>${city}</span></div>`:''}
+    <span class="tst" style="background:${col}22;color:${col}">
+      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}
+    </span>
+    ${u.obs?`<div class="tob">${u.obs}</div>`:`<div class="tnob">Sem comentários registrados.</div>`}`;
+}
+
+function openMk(mk){
+  // Fecha o anterior antes de abrir
+  if(openPopup && openPopup!==mk){
+    openPopup.closePopup();
+  }
+  mk.openPopup();
+  openPopup=mk;
+}
+
+function createAllMarkers(){
+  allU.forEach(u=>{
+    const geo=GEO[u.nome];if(!geo)return;
+    // Se já existe, atualiza popup e ícone (dados podem ter mudado na planilha)
+    if(mkMap[u.nome]){
+      mkMap[u.nome].setIcon(makeIcon(u));
+      mkMap[u.nome].setPopupContent(buildPopup(u));
+      return;
+    }
+
+    const mk=L.marker(geo,{
+      icon:makeIcon(u),
+      zIndexOffset:u.termo==='Crítico'?200:100
+    }).addTo(map);
+
+    mk.bindPopup(buildPopup(u),{
+      maxWidth:270,minWidth:230,
+      closeButton:true,
+      autoClose:false,    // não fecha ao abrir outro automaticamente (controlamos nós)
+      closeOnClick:false,
+    });
+
+    // HOVER — abre popup
+    mk.on('mouseover',function(){
+      openMk(this);
+    });
+
+    // Ao sair do hover, fecha SOMENTE se não foi "pinado" por click
+    mk.on('mouseout',function(){
+      if(!this._pinned){
+        setTimeout(()=>{
+          if(!this._pinned){ this.closePopup(); if(openPopup===this)openPopup=null; }
+        },250);
+      }
+    });
+
+    // CLICK — pina/despina o popup
+    mk.on('click',function(e){
+      L.DomEvent.stopPropagation(e);
+      if(this._pinned){
+        // já pinado: despina e fecha
+        this._pinned=false;
+        this.closePopup();
+        openPopup=null;
+      } else {
+        // fecha outro pinado se houver
+        if(openPopup && openPopup!==this){
+          openPopup._pinned=false;
+          openPopup.closePopup();
+        }
+        this._pinned=true;
+        openMk(this);
+        hlItem(u.nome);
+        map.setView(geo,7,{animate:true,duration:.4});
+      }
+    });
+
+    mk.on('popupclose',function(){
+      this._pinned=false;
+      if(openPopup===this)openPopup=null;
+    });
+
+    mkMap[u.nome]=mk;
+  });
+}
+
+function renderAll(){
+  const vis=getVis();
+  document.getElementById('vc').textContent=vis.size;
+
+  // Atualiza contadores do topo com base nos filtros ativos
+  const visArr=[...vis].map(n=>allU.find(u=>u.nome===n)).filter(Boolean);
+  const s=visArr.filter(u=>u.termo==='Saudável').length;
+  const a=visArr.filter(u=>u.termo==='Atenção').length;
+  const c=visArr.filter(u=>u.termo==='Crítico').length;
+  const n=visArr.filter(u=>!u.termo).length;
+  const tot=vis.size;
+  const pct=v=>tot>0?Math.round(v/tot*100)+'%':'—';
+  document.getElementById('csv').textContent=s;
+  document.getElementById('cat').textContent=a;
+  document.getElementById('ccr').textContent=c;
+  document.getElementById('cns').textContent=n;
+  document.getElementById('ctot').textContent=tot;
+  document.getElementById('pcsv').textContent=pct(s);
+  document.getElementById('pcat').textContent=pct(a);
+  document.getElementById('pccr').textContent=pct(c);
+  document.getElementById('pcns').textContent=pct(n);
+  // sidebar counts + progress bars
+  document.getElementById('fcs').textContent=s;
+  document.getElementById('fca').textContent=a;
+  document.getElementById('fcc').textContent=c;
+  document.getElementById('fcn').textContent=n;
+  const setBar=(sel,v)=>{const el=document.querySelector(sel);if(el)el.style.setProperty('--bar-w',(tot>0?Math.round(v/tot*100):0)+'%');};
+  setBar('.sfb[data-s="Saudável"]',s);
+  setBar('.sfb[data-s="Atenção"]',a);
+  setBar('.sfb[data-s="Crítico"]',c);
+  setBar('.sfb[data-s=""]',n);
+
+  allU.forEach(u=>{
+    const mk=mkMap[u.nome];if(!mk)return;
+    const el=mk.getElement();
+    if(el){
+      const w=el.querySelector('.pin-wrap');
+      if(w)w.classList.toggle('dim',!vis.has(u.nome));
+    }
+  });
+  renderList([...vis].map(n=>allU.find(u=>u.nome===n)).filter(Boolean));
+}
+
+function renderList(vis){
+  const list=document.getElementById('ulist');
+  list.innerHTML='';
+  vis.forEach(u=>{
+    const col=SC[u.termo]||SC[''];
+    const el=document.createElement('div');
+    el.className='ui'+(hl===u.nome?' hl':'');
+    el.dataset.nome=u.nome;
+    el.innerHTML=`<span class="ud" style="background:${col};box-shadow:0 0 5px ${col}"></span><span class="un">${u.nome}</span><span class="ub">${u.tipo}</span>`;
+    el.onclick=()=>{
+      // Fecha popup anterior
+      if(openPopup && openPopup!==mkMap[u.nome]){
+        openPopup._pinned=false;
+        openPopup.closePopup();
+        openPopup=null;
+      }
+      hlItem(u.nome);
+      const geo=GEO[u.nome];
+      if(geo)map.setView(geo,7,{animate:true,duration:.4});
+      const mk=mkMap[u.nome];
+      if(mk){ mk._pinned=true; openMk(mk); }
+    };
+    list.appendChild(el);
+  });
+}
+
+function hlItem(n){
+  hl=hl===n?null:n;
+  document.querySelectorAll('.ui').forEach(e=>e.classList.toggle('hl',e.dataset.nome===hl));
+}
+
+// ── LAST UPDATED STATUS ──────────────────────────────────────
+let lastLoaded=null;
+function showStatus(type){
+  const val=document.getElementById('last-upd-val');
+  if(!val)return;
+  const now=new Date();
+  const date=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const time=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if(type==='ok'){
+    val.style.color='var(--gl)';
+    val.title='Lido direto da planilha Google Sheets';
+    val.textContent=date+' ● '+time;
+  } else {
+    val.style.color='var(--at)';
+    val.title='Não foi possível ler a planilha — usando dados locais';
+    val.textContent='local ▲ '+time;
+  }
+}
+
+// ── AUTO-REFRESH ─────────────────────────────────────────────
+let autoOn=false, autoTimer=null, autoCountdown=0;
+const AUTO_INTERVAL=300; // 5 minutos em segundos
+
+function toggleAuto(){
+  autoOn=!autoOn;
+  const track=document.getElementById('tog-track');
+  const dot=document.getElementById('auto-dot');
+  const cd=document.getElementById('auto-cd');
+  track.classList.toggle('on',autoOn);
+  dot.classList.toggle('on',autoOn);
+  if(autoOn){
+    startAutoRefresh();
+  } else {
+    clearInterval(autoTimer);
+    autoTimer=null;
+    cd.textContent='';
+  }
+}
+
+function startAutoRefresh(){
+  autoCountdown=AUTO_INTERVAL;
+  updateCountdownDisplay();
+  clearInterval(autoTimer);
+  autoTimer=setInterval(()=>{
+    autoCountdown--;
+    updateCountdownDisplay();
+    if(autoCountdown<=0){
+      autoCountdown=AUTO_INTERVAL;
+      loadData();
+    }
+  },1000);
+}
+
+function updateCountdownDisplay(){
+  const cd=document.getElementById('auto-cd');
+  if(!autoOn){cd.textContent='';return;}
+  const m=Math.floor(autoCountdown/60);
+  const s=autoCountdown%60;
+  cd.textContent=m>0?`${m}:${String(s).padStart(2,'0')}`:`${s}s`;
+}
+
+function manualRefresh(){
+  const si=document.getElementById('si');
+  si.classList.add('go');
+  loadData().finally(()=>si.classList.remove('go'));
+  if(autoOn){ autoCountdown=AUTO_INTERVAL; }
+}
+
+function tS(s){
+  if(aS.has(s))aS.delete(s);else aS.add(s);
+  document.querySelectorAll('.ci[data-s]').forEach(e=>e.classList.toggle('on',aS.has(e.dataset.s)));
+  document.querySelectorAll('.sfb[data-s]').forEach(e=>e.classList.toggle('on',aS.has(e.dataset.s)));
+  renderAll();
+}
+function setT(t,b){aT=t;document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderAll();}
+function setG(v){aG=v;renderAll();}
+
+window.addEventListener('load',async()=>{
+  initMap();
+  // Remove loading after max 3s regardless
+  setTimeout(()=>{
+    const ld=document.getElementById('ld');
+    if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
+  },3000);
+  await loadData();
+  const ld=document.getElementById('ld');
+  if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
+});
+</script>
+</body>
+</html>
