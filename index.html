@@ -247,6 +247,30 @@ header{
   content:'';position:absolute;inset:0;pointer-events:none;z-index:10;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
 }
+
+/* ── CUSTOM FIXED TOOLTIP ── */
+#custom-tt{
+  position:fixed;z-index:99999;
+  background:rgba(4,9,5,.97);
+  border:1px solid rgba(28,140,82,.5);
+  border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.85);
+  padding:16px 18px;
+  min-width:240px;max-width:280px;
+  max-height:calc(100vh - 24px);
+  overflow-y:auto;
+  display:none;pointer-events:auto;color:var(--t);
+}
+#custom-tt.show{display:block}
+#custom-tt::-webkit-scrollbar{width:3px}
+#custom-tt::-webkit-scrollbar-thumb{background:rgba(28,140,82,.3);border-radius:3px}
+#custom-tt-close{
+  position:absolute;top:10px;right:12px;
+  background:none;border:none;color:var(--t3);
+  font-size:20px;cursor:pointer;line-height:1;padding:0
+}
+#custom-tt-close:hover{color:var(--gl)}
+.leaflet-popup{display:none!important}
 </style>
 </head>
 <body>
@@ -254,7 +278,7 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 24/06/2026 13:10</div>
+  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 24/06/2026 13:18</div>
   <div class="lbar"><div class="lfill"></div></div>
 </div>
 
@@ -263,7 +287,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 24/06/2026 13:10</span></div>
+      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 24/06/2026 13:18</span></div>
     </div>
   </div>
   <div class="hr">
@@ -448,7 +472,7 @@ function initMap(){
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19
   }).addTo(map);
-  map.on('click',()=>closeOpenPopup());
+  map.on('click',()=>closeTT());
   // Fit Brazil fully visible
   setTimeout(()=>map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28]}),200);
   // Custom controls: zoom + recenter
@@ -701,47 +725,32 @@ function createAllMarkers(){
       autoClose:false,
       closeOnClick:false,
       autoPan:false,
-      offset:L.point(0,-10),
     });
 
-    // HOVER — abre popup
-    mk.on('mouseover',function(){
-      openMk(this);
+    mk.on('mouseover',function(e){
+      showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
     });
-
-    // Ao sair do hover, fecha SOMENTE se não foi "pinado" por click
-    mk.on('mouseout',function(){
+    mk.on('mousemove',function(e){
       if(!this._pinned){
-        setTimeout(()=>{
-          if(!this._pinned){ this.closePopup(); if(openPopup===this)openPopup=null; }
-        },250);
+        showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
       }
     });
-
-    // CLICK — pina/despina o popup
+    mk.on('mouseout',function(){
+      if(!this._pinned){
+        hideTTTimer=setTimeout(closeTT,250);
+      }
+    });
     mk.on('click',function(e){
       L.DomEvent.stopPropagation(e);
       if(this._pinned){
-        // já pinado: despina e fecha
-        this._pinned=false;
-        this.closePopup();
-        openPopup=null;
+        this._pinned=false; pinnedMk=null; closeTT();
       } else {
-        // fecha outro pinado se houver
-        if(openPopup && openPopup!==this){
-          openPopup._pinned=false;
-          openPopup.closePopup();
-        }
-        this._pinned=true;
-        openMk(this);
+        if(pinnedMk && pinnedMk!==this){pinnedMk._pinned=false;}
+        this._pinned=true; pinnedMk=this;
+        showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
         hlItem(u.nome);
         map.setView(geo,7,{animate:true,duration:.4});
       }
-    });
-
-    mk.on('popupclose',function(){
-      this._pinned=false;
-      if(openPopup===this)openPopup=null;
     });
 
     mkMap[u.nome]=mk;
@@ -811,7 +820,15 @@ function renderList(vis){
       const geo=GEO[u.nome];
       if(geo)map.setView(geo,7,{animate:true,duration:.4});
       const mk=mkMap[u.nome];
-      if(mk){ mk._pinned=true; openMk(mk); }
+      if(mk){
+        if(pinnedMk && pinnedMk!==mk) pinnedMk._pinned=false;
+        mk._pinned=true; pinnedMk=mk;
+        // simulate hover to show TT centered
+        const el=mk.getElement();
+        const rect=el?el.getBoundingClientRect():null;
+        const fakeEvt=rect?{clientX:rect.left+rect.width/2,clientY:rect.top}:null;
+        showTT(allU.find(x=>x.nome===u.nome)||allU[0], fakeEvt);
+      }
     };
     list.appendChild(el);
   });
@@ -899,6 +916,44 @@ function tS(s){
 function setT(t,b){aT=t;document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderAll();}
 function setG(v){aG=v;renderAll();}
 
+
+// ── CUSTOM TOOLTIP ──────────────────────────────────────────
+let pinnedMk=null, hideTTTimer=null;
+
+function showTT(u, clientX, clientY){
+  clearTimeout(hideTTTimer);
+  const col=SC[u.termo]||SC[''];
+  const sl=u.termo||'Sem status';
+  const city=CITY[u.nome]||'';
+  document.getElementById('custom-tt-body').innerHTML=`
+    <div class="tnm">${u.nome}</div>
+    <div class="tpp"><span class="tpi ${u.tipo==='DC'?'pdc':'pbp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
+    <div class="trow">GRP: <span>${u.grp||'—'}</span></div>
+    ${city?`<div class="trow" style="margin-bottom:6px">Cidade: <span>${city}</span></div>`:''}
+    <span class="tst" style="background:${col}22;color:${col}">
+      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}
+    </span>
+    ${u.obs?`<div class="tob">${u.obs}</div>`:`<div class="tnob">Sem comentários.</div>`}`;
+  const tt=document.getElementById('custom-tt');
+  tt.classList.add('show');
+  // Position after render
+  requestAnimationFrame(()=>{
+    const W=window.innerWidth, H=window.innerHeight;
+    const tw=tt.offsetWidth, th=tt.offsetHeight;
+    let x=clientX+16, y=clientY-th-16;
+    if(x+tw>W-12) x=clientX-tw-16;
+    if(x<8) x=8;
+    if(y<8) y=clientY+16;
+    if(y+th>H-8) y=H-th-8;
+    tt.style.left=x+'px'; tt.style.top=y+'px';
+  });
+}
+
+function closeTT(){
+  document.getElementById('custom-tt').classList.remove('show');
+  if(pinnedMk){pinnedMk._pinned=false;pinnedMk=null;}
+}
+
 window.addEventListener('load',async()=>{
   initMap();
   // Remove loading after max 3s regardless
@@ -911,5 +966,9 @@ window.addEventListener('load',async()=>{
   if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
 });
 </script>
+<div id="custom-tt">
+  <button id="custom-tt-close" onclick="closeTT()">×</button>
+  <div id="custom-tt-body"></div>
+</div>
 </body>
 </html>
