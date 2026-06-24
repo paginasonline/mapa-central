@@ -262,7 +262,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5">build 24/06/2026 11:40</span></div>
+      <div class="lsub">VMO</div>
     </div>
   </div>
   <div class="hr">
@@ -699,7 +699,9 @@ function createAllMarkers(){
       closeButton:true,
       autoClose:false,
       closeOnClick:false,
-      autoPan:false,
+      autoPan:true,
+      autoPanPaddingTopLeft:L.point(10,190),
+      autoPanPaddingBottomRight:L.point(10,10),
     });
 
     // HOVER — abre popup
