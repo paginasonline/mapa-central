@@ -270,7 +270,7 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:16</div>
+  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:19</div>
   <div class="lbar"><div class="lfill"></div></div>
 </div>
 
@@ -279,7 +279,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:16</span></div>
+      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:19</span></div>
     </div>
   </div>
   <div class="hr">
@@ -634,6 +634,29 @@ function getVis(){
   }).map(u=>u.nome));
 }
 
+
+// Pixel offsets para separar clusters visualmente (não muda coordenada geográfica)
+// [dx, dy] — pequenos o suficiente para não parecer errado geograficamente
+const PX_OFF={
+  // DCs Uberlândia — pentágono 18px
+  'Delivery Center - Andreia':    [ 0,-18],
+  'Delivery Center - Kassius':    [17, -6],
+  'Delivery Center - Carol':      [11, 15],
+  'Delivery Center - Enterprise': [-11,15],
+  'Delivery Center - Thiago':     [-17,-6],
+  // SP — hexágono 18px
+  'BP SP MOEMA':           [ 0,-18],
+  'BP SÃO PAULO BERRINI':  [16, -9],
+  'BP ABC PAULISTA':       [16,  9],
+  'BP SUDESTE PAULISTA':   [ 0, 18],
+  'BP ALPHAVILLE':         [-16, 9],
+  'BP JUNDIAÍ':            [-16,-9],
+  // SC/PR — quadrado 14px
+  'BP CURITIBA':           [-14,-14],
+  'BP NORTE CATARINENSE':  [ 14,-14],
+  'BP LITORAL CATARINENSE':[ 14, 14],
+  'BP SANTA CATARINA':     [-14, 14],
+};
 function makeIcon(u){
   const col=SC[u.termo]||SC[''];
   const isDC=u.tipo==='DC';
@@ -657,7 +680,7 @@ function makeIcon(u){
       <div class="pin-shadow"></div>
     </div>`,
     iconSize:[totalH,totalH],
-    iconAnchor:[Math.round(totalH/2),totalH-1],
+    iconAnchor:[Math.round(totalH/2)-(PX_OFF[u.nome]?PX_OFF[u.nome][0]:0), totalH-1-(PX_OFF[u.nome]?PX_OFF[u.nome][1]:0)],
     popupAnchor:[0,-totalH],
   });
 }
