@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sankhya · Mapa de Saúde VMO</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -22,247 +22,139 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 /* LOADING */
 #ld{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
 #ld.out{opacity:0;pointer-events:none}
-.ll{font-size:52px;font-weight:700;color:var(--gl);letter-spacing:-2px;margin-bottom:6px}
-.ls{font-size:12px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.15em;margin-bottom:40px}
-.lbar{width:240px;height:2px;background:var(--s2);border-radius:2px;overflow:hidden}
-.lfill{height:100%;background:var(--gl);border-radius:2px;animation:lw 1.6s ease forwards}
+.ll{font-size:42px;font-weight:700;color:var(--gl);letter-spacing:-2px;margin-bottom:5px}
+.ls{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.12em;margin-bottom:6px}
+.lb-ts{font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;opacity:.5;margin-bottom:32px}
+.lb-bar{width:220px;height:2px;background:var(--s2);border-radius:2px;overflow:hidden}
+.lb-fill{height:100%;background:var(--gl);border-radius:2px;animation:lw 1.6s ease forwards}
 @keyframes lw{0%{width:0}100%{width:100%}}
 
 /* HEADER */
-header{
-  height:70px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 32px;border-bottom:1px solid var(--b);
-  background:linear-gradient(180deg,#060f08 0%,#04090500 100%);
-  position:relative;z-index:1000;flex-shrink:0
-}
-.la{display:flex;align-items:center;gap:16px}
-.logo{
-  width:44px;height:44px;background:var(--g);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:20px;color:#fff;flex-shrink:0;
-  box-shadow:0 0 20px rgba(28,140,82,.5)
-}
-.ln{font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--t)}
-.lsub{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.12em;margin-top:3px;text-transform:uppercase}
-.hr{display:flex;align-items:center;gap:16px}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--b);background:var(--bg2);position:relative;z-index:1000;flex-shrink:0}
+.la{display:flex;align-items:center;gap:13px}
+.logo{width:40px;height:40px;background:var(--g);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff;box-shadow:0 0 20px rgba(28,140,82,.35)}
+.ln{font-size:17px;font-weight:600;letter-spacing:-.4px}
+.lsub{font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:2px}
+.lbuild{font-size:9px;color:var(--t3);font-family:'DM Mono',monospace;opacity:.45;margin-top:1px}
+.hr{display:flex;align-items:center;gap:14px}
 
-/* AUTO-REFRESH */
-.auto-label{display:flex;align-items:center;gap:9px;cursor:default;user-select:none}
-.auto-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);transition:background .3s,box-shadow .3s;flex-shrink:0}
-.auto-dot.on{background:var(--gl);box-shadow:0 0 8px var(--gl);animation:blink 2s ease-in-out infinite}
+/* AUTO TOGGLE */
+.auto-wrap{display:flex;align-items:center;gap:8px;cursor:default;user-select:none}
+.auto-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all .3s}
+.auto-dot.on{background:var(--gl);box-shadow:0 0 7px var(--gl);animation:blink 2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.auto-label span{font-size:12px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.05em;white-space:nowrap}
-.auto-cd{font-size:12px;color:var(--gl);font-family:'DM Mono',monospace;min-width:34px}
-.toggle-wrap{cursor:pointer;padding:2px 0}
-.toggle-track{width:40px;height:20px;border-radius:10px;background:var(--s2);border:1px solid var(--b);position:relative;transition:all .25s}
-.toggle-track.on{background:var(--gd);border-color:var(--g)}
-.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--t3);position:absolute;top:2px;left:2px;transition:all .25s}
-.toggle-track.on .toggle-thumb{transform:translateX(20px);background:var(--gl)}
+.auto-lbl{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.04em}
+.auto-cd{font-size:11px;color:var(--gl);font-family:'DM Mono',monospace;min-width:32px}
+.tog-wrap{cursor:pointer}
+.tog-track{width:38px;height:20px;border-radius:10px;background:var(--s2);border:1px solid var(--b);position:relative;transition:all .25s}
+.tog-track.on{background:var(--gd);border-color:var(--g)}
+.tog-thumb{width:14px;height:14px;border-radius:50%;background:var(--t3);position:absolute;top:2px;left:2px;transition:all .25s}
+.tog-track.on .tog-thumb{transform:translateX(18px);background:var(--gl)}
 
-/* REFRESH BUTTON */
-.rbtn{
-  background:var(--g);border:none;color:#fff;
-  padding:10px 22px;border-radius:9px;font-size:14px;
-  font-family:inherit;font-weight:600;cursor:pointer;
-  display:flex;align-items:center;gap:8px;transition:all .2s;
-  box-shadow:0 0 20px rgba(28,140,82,.4),0 2px 8px rgba(0,0,0,.4)
-}
-.rbtn:hover{background:var(--gl);box-shadow:0 0 28px rgba(39,196,104,.5);transform:translateY(-1px)}
+/* LAST READ */
+.upd-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.upd-lbl{font-size:9px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+#upd-val{font-size:13px;color:var(--t2);font-family:'DM Mono',monospace}
+
+/* REFRESH BTN */
+.rbtn{background:var(--g);border:none;color:#fff;padding:9px 20px;border-radius:8px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;box-shadow:0 0 16px rgba(28,140,82,.35)}
+.rbtn:hover{background:var(--gl);transform:translateY(-1px)}
 .rbtn:active{transform:translateY(0)}
-.si{font-size:16px;display:inline-block}
+.si{font-size:15px;display:inline-block}
 .si.go{animation:rot 1s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 
-/* COUNTER BAR — o coração do dashboard */
-.cbar{
-  display:flex;border-bottom:1px solid var(--b);
-  background:var(--bg2);position:relative;z-index:1000;flex-shrink:0;
-  height:90px
-}
-.ci{
-  flex:1;display:flex;align-items:center;gap:14px;
-  padding:0 24px;border-right:1px solid var(--b);
-  cursor:pointer;transition:background .15s;position:relative;overflow:hidden
-}
+/* COUNTER BAR */
+.cbar{height:76px;display:flex;border-bottom:1px solid var(--b);background:var(--bg2);flex-shrink:0;position:relative;z-index:1000}
+.ci{flex:1;display:flex;align-items:center;gap:12px;padding:0 22px;border-right:1px solid var(--b);cursor:pointer;transition:background .15s;position:relative;overflow:hidden}
 .ci:last-child{border-right:none}
-.ci::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 4%,transparent),transparent);
-  opacity:0;transition:opacity .2s
-}
-.ci:hover::before{opacity:1}
-.ci.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--cc);box-shadow:0 0 12px var(--cc)}
-.ci.on::before{opacity:1}
-/* Big glow dot */
-.cdot{
-  width:14px;height:14px;border-radius:50%;
-  background:var(--cc);box-shadow:0 0 12px var(--cc),0 0 24px color-mix(in srgb,var(--cc) 40%,transparent);
-  flex-shrink:0;animation:dotpulse 3s ease-in-out infinite
-}
-@keyframes dotpulse{0%,100%{box-shadow:0 0 8px var(--cc),0 0 16px color-mix(in srgb,var(--cc) 30%,transparent)}50%{box-shadow:0 0 14px var(--cc),0 0 28px color-mix(in srgb,var(--cc) 50%,transparent)}}
-.clb{font-size:15px;color:var(--t2);font-weight:400;letter-spacing:.01em}
-.cright{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto;gap:2px}
-.cpct{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;color:var(--cc);opacity:.7;letter-spacing:-.5px;line-height:1}
-.cv{
-  font-size:46px;font-weight:700;
-  color:var(--cc);font-family:'DM Mono',monospace;
-  line-height:1;letter-spacing:-2px;
-  text-shadow:0 0 30px color-mix(in srgb,var(--cc) 50%,transparent)
-}
-.cright{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto;gap:2px}
-.cpct{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;color:var(--cc);opacity:.7;letter-spacing:-.5px;line-height:1}
+.ci:hover{background:var(--s)}
+.ci.on::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--cc);box-shadow:0 0 10px var(--cc)}
+.cdot{width:12px;height:12px;border-radius:50%;background:var(--cc);box-shadow:0 0 10px var(--cc);flex-shrink:0;animation:dpulse 3s ease-in-out infinite}
+@keyframes dpulse{0%,100%{box-shadow:0 0 8px var(--cc)}50%{box-shadow:0 0 16px var(--cc)}}
+.clbl{font-size:13px;color:var(--t2)}
+.cvals{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto;gap:1px}
+.cv{font-size:36px;font-weight:700;color:var(--cc);font-family:'DM Mono',monospace;line-height:1;letter-spacing:-1.5px;text-shadow:0 0 24px color-mix(in srgb,var(--cc) 40%,transparent)}
+.cpct{font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--cc);opacity:.65;line-height:1}
 
 /* LAYOUT */
-.wrap{display:flex;height:calc(100vh - 160px)}
+.wrap{display:flex;height:calc(100vh - 140px)}
 
 /* SIDEBAR */
-.sb{
-  width:300px;flex-shrink:0;border-right:1px solid var(--b);
-  display:flex;flex-direction:column;background:var(--bg2);overflow:hidden;z-index:500
-}
-.ss{padding:16px 18px;border-bottom:1px solid var(--b);flex-shrink:0}
-.stit{
-  font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.14em;
-  color:var(--t3);text-transform:uppercase;margin-bottom:10px
-}
-.tr{display:flex;gap:6px}
-.tb{
-  flex:1;padding:9px 6px;border-radius:7px;font-size:12px;
-  border:1px solid var(--b);background:transparent;color:var(--t2);
-  cursor:pointer;transition:all .15s;font-family:inherit;text-align:center;font-weight:500
-}
+.sb{width:288px;flex-shrink:0;border-right:1px solid var(--b);display:flex;flex-direction:column;background:var(--bg2);overflow:hidden;z-index:500}
+.ss{padding:14px 16px;border-bottom:1px solid var(--b);flex-shrink:0}
+.stit{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;margin-bottom:9px}
+.tr{display:flex;gap:5px}
+.tb{flex:1;padding:8px 5px;border-radius:7px;font-size:12px;border:1px solid var(--b);background:transparent;color:var(--t2);cursor:pointer;transition:all .15s;font-family:inherit;text-align:center;font-weight:500}
 .tb:hover{background:var(--s);border-color:var(--b2)}
 .tb.on{background:var(--gd);border-color:var(--g);color:#4ade80;font-weight:600}
-.gsel{
-  width:100%;padding:9px 12px;border-radius:7px;background:var(--s);
-  border:1px solid var(--b);color:var(--t);font-size:13px;
-  font-family:inherit;outline:none;cursor:pointer;transition:border-color .15s
-}
+.gsel{width:100%;padding:9px 12px;border-radius:7px;background:var(--s);border:1px solid var(--b);color:var(--t);font-size:13px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .15s}
 .gsel:focus{border-color:var(--b2)}
 .gsel option{background:var(--bg3)}
-.sf{display:flex;flex-direction:column;gap:6px}
-.sfb{
-  display:flex;align-items:center;gap:9px;background:transparent;
-  border:1px solid var(--b);color:var(--t2);padding:10px 12px;
-  border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
-  transition:all .15s;text-align:left;width:100%;position:relative;overflow:hidden
-}
-.sfb::after{
-  content:'';position:absolute;left:0;top:0;bottom:0;
-  width:var(--bar-w,0%);background:var(--sc);opacity:.08;
-  transition:width .4s ease;pointer-events:none
-}
+.sf{display:flex;flex-direction:column;gap:5px}
+.sfb{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--b);color:var(--t2);padding:9px 12px;border-radius:7px;font-size:13px;font-family:inherit;cursor:pointer;transition:all .15s;text-align:left;width:100%;position:relative;overflow:hidden}
+.sfb::after{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--bw,0%);background:var(--sc);opacity:.08;transition:width .4s ease;pointer-events:none}
 .sfb:hover{border-color:var(--b2);background:var(--s)}
 .sfb.on{border-color:var(--sc);color:var(--sc);background:color-mix(in srgb,var(--sc) 10%,transparent)}
-.sfd{width:9px;height:9px;border-radius:50%;background:var(--sc);flex-shrink:0;box-shadow:0 0 6px var(--sc)}
-.sfc{margin-left:auto;font-family:'DM Mono',monospace;font-size:13px;opacity:.8;font-weight:600}
-.uh{padding:12px 18px 6px;flex-shrink:0}
-.uw{flex:1;overflow-y:auto;padding:4px 8px 10px}
+.sfd{width:8px;height:8px;border-radius:50%;background:var(--sc);flex-shrink:0;box-shadow:0 0 5px var(--sc)}
+.sfc{margin-left:auto;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;opacity:.75}
+.uh{padding:10px 16px 4px;flex-shrink:0}
+.uw{flex:1;overflow-y:auto;padding:4px 7px 10px}
 .uw::-webkit-scrollbar{width:3px}
 .uw::-webkit-scrollbar-thumb{background:var(--s2);border-radius:3px}
-.ui{
-  display:flex;align-items:center;gap:9px;padding:9px 10px;
-  border-radius:7px;cursor:pointer;transition:all .12s;margin-bottom:2px
-}
+.ui{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:background .12s;margin-bottom:2px}
 .ui:hover{background:var(--s)}
 .ui.hl{background:var(--s2);outline:1px solid var(--b2)}
-.ud{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.un{font-size:12px;flex:1;line-height:1.3;color:var(--t)}
-.ub{
-  font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;
-  border-radius:3px;background:var(--s2);color:var(--t3);flex-shrink:0
-}
+.udot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.uname{font-size:12px;flex:1;line-height:1.3}
+.ubadge{font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:3px;background:var(--s2);color:var(--t3);flex-shrink:0}
 
 /* MAP */
 .ma{flex:1;position:relative;overflow:hidden}
-.ma::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);/* scanline */}
+.ma::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px)/* scanline */}
 #map{width:100%;height:100%}
-/* Tiles bem escuros pra contrastar com os pins coloridos */
-.leaflet-tile{filter:brightness(.38) saturate(.25) hue-rotate(100deg) contrast(1.05)}
-.custom-ctrl{display:flex;flex-direction:column;gap:4px;margin:12px 0 0 12px}
-.cmap-btn{
-  width:32px;height:32px;background:var(--bg2);border:1px solid var(--b2);
-  color:var(--gl);border-radius:8px;font-size:18px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;font-family:inherit;line-height:1;
-  box-shadow:0 2px 8px rgba(0,0,0,.4)
-}
-.cmap-btn:hover{background:var(--s2);border-color:var(--gl);color:#fff}
-.cmap-btn:active{transform:scale(.93)}
-.cmap-center{border-top:1px solid var(--b);margin-top:2px}
+.ma::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px)}
+.leaflet-tile{filter:brightness(.42) saturate(.25) hue-rotate(100deg)}
 .leaflet-container{background:#030806}
 .leaflet-control-zoom{display:none}
-.ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
-.cbtn{width:34px;height:34px;background:var(--bg2);border:1px solid var(--b2);color:var(--gl);border-radius:8px;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.5)}
-.cbtn:hover{background:var(--s2);color:#fff;border-color:var(--gl)}
-.cbtn:active{transform:scale(.92)}
-.cbtn-c{font-size:14px;border-top:1px solid var(--b);padding-top:5px;margin-top:3px}
-.ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
-.cbtn{
-  width:34px;height:34px;background:var(--bg2);border:1px solid var(--b2);
-  color:var(--gl);border-radius:8px;font-size:20px;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.5)
-}
-.cbtn:hover{background:var(--s2);color:#fff;border-color:var(--gl)}
-.cbtn:active{transform:scale(.92)}
-.cbtn-c{font-size:14px;border-top:1px solid var(--b);padding-top:5px;margin-top:3px}
-.leaflet-control-attribution{background:rgba(3,8,5,.9)!important;color:var(--t3)!important;font-size:9px!important;border-top:1px solid var(--b)!important}
+.leaflet-control-attribution{background:rgba(3,8,5,.9)!important;color:var(--t3)!important;font-size:9px!important}
 .leaflet-control-attribution a{color:var(--t3)!important}
+
+/* CUSTOM MAP CONTROLS */
+.ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
+.cbtn{width:32px;height:32px;background:var(--bg2);border:1px solid var(--b2);color:var(--gl);border-radius:8px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.cbtn:hover{background:var(--s2);color:#fff;border-color:var(--gl)}
+.cbtn:active{transform:scale(.92)}
+.cbtn-sep{margin-top:3px;border-top:1px solid var(--b);padding-top:5px}
 
 /* PINS */
 .pin-wrap{display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:opacity .25s;transform-origin:bottom center}
 .pin-wrap.dim{opacity:.1;pointer-events:none}
-.pin-wrap:not(.dim):hover{filter:brightness(1.3);transform:scale(1.25) translateY(-4px) rotate(var(--pin-rot,0deg))}
-.pin-flag{
-  position:relative;display:flex;align-items:center;justify-content:center;
-  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
-  border:2px solid rgba(0,0,0,.4);
-  transition:box-shadow .15s
-}
-.pin-flag-inner{font-weight:700;font-family:'DM Mono',monospace;color:#fff;line-height:1}
+.pin-wrap:not(.dim):hover{filter:brightness(1.25);transform:scale(1.2) translateY(-3px)}
+.pin-flag{position:relative;display:flex;align-items:center;justify-content:center;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1.5px solid rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.pin-lbl{font-weight:700;font-family:'DM Mono',monospace;color:#fff;line-height:1}
 .pin-stem{width:2px;border-radius:0 0 2px 2px;margin-top:-1px;opacity:.8}
-.pin-shadow{width:10px;height:4px;border-radius:50%;background:rgba(0,0,0,.5);margin-top:2px;filter:blur(2px)}
-/* Só crítico pulsa */
-@keyframes pulse{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.5),0 0 0 0 rgba(239,68,68,.7)}70%{box-shadow:0 2px 8px rgba(0,0,0,.5),0 0 0 12px rgba(239,68,68,0)}}
-.pin-critico .pin-flag{animation:pulse 1.8s ease-in-out infinite}
+.pin-shadow{width:8px;height:3px;border-radius:50%;background:rgba(0,0,0,.4);margin-top:1px;filter:blur(1.5px)}
+@keyframes critico-pulse{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 0 0 rgba(239,68,68,.6)}70%{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 0 8px rgba(239,68,68,0)}}
+.pin-critico .pin-flag{animation:critico-pulse 1.8s ease-in-out infinite}
 
-/* POPUP */
-.leaflet-popup-content-wrapper{
-  background:rgba(4,9,5,.97)!important;
-  border:1px solid rgba(28,140,82,.5)!important;
-  border-radius:14px!important;
-  box-shadow:0 20px 60px rgba(0,0,0,.85),0 0 0 1px rgba(28,140,82,.1)!important;
-  padding:0!important;color:var(--t)!important
-}
-.leaflet-popup-tip-container{display:none!important}
-.leaflet-popup-content{margin:16px 18px!important;min-width:240px;max-width:270px}
-.leaflet-popup-close-button{color:var(--t3)!important;font-size:20px!important;top:10px!important;right:12px!important;line-height:1!important;padding:0!important}
-.leaflet-popup-close-button:hover{color:var(--gl)!important;background:none!important}
-.tnm{font-size:14px;font-weight:600;line-height:1.35;padding-right:16px;color:var(--t);margin-bottom:9px}
-.tpp{display:flex;gap:5px;margin-bottom:8px}
-.tpi{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:4px}
-.pbp{background:rgba(59,130,246,.15);color:#60a5fa}
-.pdc{background:rgba(168,85,247,.15);color:#c084fc}
-.trow{font-size:12px;color:var(--t3);margin-bottom:4px}
-.trow span{color:var(--t2)}
-.tst{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:5px 10px;border-radius:6px;margin:6px 0 9px}
-.tob{font-size:12.5px;color:var(--t2);line-height:1.65;border-top:1px solid var(--b);padding-top:9px}
-.tnob{font-size:12px;color:var(--t3);font-style:italic;border-top:1px solid var(--b);padding-top:9px}
-
-/* Scanline overlay sutil pra dar feel de monitor */
-.ma::after{
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:10;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
-}
-
-#custom-tt{position:fixed;z-index:99999;background:rgba(4,9,5,.97);border:1px solid rgba(28,140,82,.5);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.85);padding:16px 18px;min-width:240px;max-width:280px;max-height:calc(100vh - 24px);overflow-y:auto;display:none;pointer-events:auto;color:var(--t)}
-#custom-tt.show{display:block}
-#custom-tt::-webkit-scrollbar{width:3px}
-#custom-tt::-webkit-scrollbar-thumb{background:rgba(28,140,82,.3);border-radius:3px}
-#custom-tt-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;line-height:1;padding:0}
-#custom-tt-close:hover{color:var(--gl)}
-.leaflet-popup{display:none!important}
+/* CUSTOM TOOLTIP (fixed, over everything) */
+#ctt{position:fixed;z-index:99999;background:rgba(4,9,5,.97);border:1px solid rgba(28,140,82,.5);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.85);padding:15px 17px;min-width:235px;max-width:275px;max-height:calc(100vh - 20px);overflow-y:auto;display:none;color:var(--t)}
+#ctt.show{display:block}
+#ctt::-webkit-scrollbar{width:3px}
+#ctt::-webkit-scrollbar-thumb{background:rgba(28,140,82,.3);border-radius:3px}
+#ctt-close{position:absolute;top:9px;right:11px;background:none;border:none;color:var(--t3);font-size:19px;cursor:pointer;line-height:1;padding:0}
+#ctt-close:hover{color:var(--gl)}
+.tt-nm{font-size:13px;font-weight:600;line-height:1.35;padding-right:14px;margin-bottom:8px}
+.tt-pills{display:flex;gap:5px;margin-bottom:7px}
+.tt-pi{font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px}
+.pi-bp{background:rgba(59,130,246,.15);color:#60a5fa}
+.pi-dc{background:rgba(168,85,247,.15);color:#c084fc}
+.tt-row{font-size:11px;color:var(--t3);margin-bottom:3px}
+.tt-row span{color:var(--t2)}
+.tt-st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 9px;border-radius:5px;margin:5px 0 8px}
+.tt-obs{font-size:11px;color:var(--t2);line-height:1.6;border-top:1px solid var(--b);padding-top:8px}
+.tt-nobs{font-size:11px;color:var(--t3);font-style:italic;border-top:1px solid var(--b);padding-top:8px}
 </style>
 </head>
 <body>
@@ -270,8 +162,8 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:22</div>
-  <div class="lbar"><div class="lfill"></div></div>
+  <div class="lb-ts">build 26/06/2026 16:29</div>
+  <div class="lb-bar"><div class="lb-fill"></div></div>
 </div>
 
 <header>
@@ -279,107 +171,98 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:22</span></div>
+      <div class="lsub">VMO</div>
+      <div class="lbuild">build 26/06/2026 16:29</div>
     </div>
   </div>
   <div class="hr">
-    <label class="auto-label" id="auto-label">
+    <div class="auto-wrap">
       <span class="auto-dot" id="auto-dot"></span>
-      <span id="auto-txt">Auto-atualizar</span>
-      <div class="toggle-wrap" onclick="toggleAuto()">
-        <div class="toggle-track" id="tog-track">
-          <div class="toggle-thumb" id="tog-thumb"></div>
-        </div>
+      <span class="auto-lbl">Auto-atualizar</span>
+      <div class="tog-wrap" onclick="toggleAuto()">
+        <div class="tog-track" id="tog-track"><div class="tog-thumb" id="tog-thumb"></div></div>
       </div>
       <span class="auto-cd" id="auto-cd"></span>
-    </label>
-    <div id="last-upd" style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:'DM Mono',monospace;line-height:1.3">
-  <span style="font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase">Última leitura</span>
-  <span id="last-upd-val" style="font-size:13px;color:var(--t2)">—</span>
-</div>
-<button class="rbtn" onclick="manualRefresh()"><span class="si" id="si">↻</span> Atualizar</button>
+    </div>
+    <div class="upd-wrap">
+      <span class="upd-lbl">Última leitura</span>
+      <span id="upd-val">—</span>
+    </div>
+    <button class="rbtn" onclick="manualRefresh()"><span class="si" id="si">↻</span> Atualizar</button>
   </div>
 </header>
 
 <div class="cbar">
-  <div class="ci" style="--cc:var(--sv)" data-s="Saudável" onclick="tS('Saudável')">
-    <span class="cdot"></span>
-    <span class="clb">Saudável</span>
-    <div class="cright">
-      <span class="cv" id="csv">0</span>
-      <span class="cpct" id="pcsv">—</span>
-    </div>
+  <div class="ci" style="--cc:var(--sv)" data-s="Saudável" onclick="toggleStatus('Saudável')">
+    <span class="cdot"></span><span class="clbl">Saudável</span>
+    <div class="cvals"><span class="cv" id="cv-s">0</span><span class="cpct" id="cp-s">—</span></div>
   </div>
-  <div class="ci" style="--cc:var(--at)" data-s="Atenção" onclick="tS('Atenção')">
-    <span class="cdot"></span>
-    <span class="clb">Atenção</span>
-    <div class="cright">
-      <span class="cv" id="cat">0</span>
-      <span class="cpct" id="pcat">—</span>
-    </div>
+  <div class="ci" style="--cc:var(--at)" data-s="Atenção" onclick="toggleStatus('Atenção')">
+    <span class="cdot"></span><span class="clbl">Atenção</span>
+    <div class="cvals"><span class="cv" id="cv-a">0</span><span class="cpct" id="cp-a">—</span></div>
   </div>
-  <div class="ci" style="--cc:var(--cr)" data-s="Crítico" onclick="tS('Crítico')">
-    <span class="cdot"></span>
-    <span class="clb">Crítico</span>
-    <div class="cright">
-      <span class="cv" id="ccr">0</span>
-      <span class="cpct" id="pccr">—</span>
-    </div>
+  <div class="ci" style="--cc:var(--cr)" data-s="Crítico" onclick="toggleStatus('Crítico')">
+    <span class="cdot"></span><span class="clbl">Crítico</span>
+    <div class="cvals"><span class="cv" id="cv-c">0</span><span class="cpct" id="cp-c">—</span></div>
   </div>
-  <div class="ci" style="--cc:var(--ns)" data-s="" onclick="tS('')">
-    <span class="cdot"></span>
-    <span class="clb">Sem status</span>
-    <div class="cright">
-      <span class="cv" id="cns">0</span>
-      <span class="cpct" id="pcns">—</span>
-    </div>
+  <div class="ci" style="--cc:var(--ns)" data-s="" onclick="toggleStatus('')">
+    <span class="cdot"></span><span class="clbl">Sem status</span>
+    <div class="cvals"><span class="cv" id="cv-n">0</span><span class="cpct" id="cp-n">—</span></div>
   </div>
   <div class="ci" style="--cc:var(--gl);border-right:none">
-    <span class="cdot"></span>
-    <span class="clb">Total</span>
-    <div class="cright">
-      <span class="cv" id="ctot">0</span>
-      <span class="cpct" id="pctot" style="color:var(--t3);font-size:14px;font-weight:400;letter-spacing:.03em;text-transform:uppercase">unidades</span>
-    </div>
+    <span class="cdot"></span><span class="clbl">Total</span>
+    <div class="cvals"><span class="cv" id="cv-t">0</span><span class="cpct" style="font-size:12px;font-weight:400;letter-spacing:.03em;text-transform:uppercase">unidades</span></div>
   </div>
 </div>
 
 <div class="wrap">
   <div class="sb">
     <div class="ss">
-      <div class="stit">Tipo de Unidade</div>
+      <div class="stit">Tipo</div>
       <div class="tr">
-        <button class="tb on" onclick="setT('ALL',this)">Todos</button>
-        <button class="tb" onclick="setT('BP',this)">BP</button>
-        <button class="tb" onclick="setT('DC',this)">Delivery Center</button>
+        <button class="tb on" onclick="setType('ALL',this)">Todos</button>
+        <button class="tb" onclick="setType('BP',this)">BP</button>
+        <button class="tb" onclick="setType('DC',this)">Delivery Center</button>
       </div>
     </div>
     <div class="ss">
       <div class="stit">Gerente Regional</div>
-      <select class="gsel" id="gsel" onchange="setG(this.value)">
+      <select class="gsel" id="gsel" onchange="setGrp(this.value)">
         <option value="ALL">Todos os GRPs</option>
       </select>
     </div>
     <div class="ss">
       <div class="stit">Status</div>
       <div class="sf">
-        <button class="sfb" style="--sc:var(--sv)" data-s="Saudável" onclick="tS('Saudável')"><span class="sfd"></span>Saudável<span class="sfc" id="fcs">0</span></button>
-        <button class="sfb" style="--sc:var(--at)" data-s="Atenção" onclick="tS('Atenção')"><span class="sfd"></span>Atenção<span class="sfc" id="fca">0</span></button>
-        <button class="sfb" style="--sc:var(--cr)" data-s="Crítico" onclick="tS('Crítico')"><span class="sfd"></span>Crítico<span class="sfc" id="fcc">0</span></button>
-        <button class="sfb" style="--sc:var(--ns)" data-s="" onclick="tS('')"><span class="sfd"></span>Sem status<span class="sfc" id="fcn">0</span></button>
+        <button class="sfb" style="--sc:var(--sv)" data-s="Saudável" onclick="toggleStatus('Saudável')"><span class="sfd"></span>Saudável<span class="sfc" id="sf-s">0</span></button>
+        <button class="sfb" style="--sc:var(--at)" data-s="Atenção" onclick="toggleStatus('Atenção')"><span class="sfd"></span>Atenção<span class="sfc" id="sf-a">0</span></button>
+        <button class="sfb" style="--sc:var(--cr)" data-s="Crítico" onclick="toggleStatus('Crítico')"><span class="sfd"></span>Crítico<span class="sfc" id="sf-c">0</span></button>
+        <button class="sfb" style="--sc:var(--ns)" data-s="" onclick="toggleStatus('')"><span class="sfd"></span>Sem status<span class="sfc" id="sf-n">0</span></button>
       </div>
     </div>
-    <div class="uh"><div class="stit">Visíveis &nbsp;<span id="vc" style="color:var(--gl)">0</span></div></div>
+    <div class="uh"><div class="stit">Visíveis &nbsp;<span id="vis-cnt" style="color:var(--gl)">0</span></div></div>
     <div class="uw" id="ulist"></div>
   </div>
-  <div class="ma"><div id="map"></div></div>
+  <div class="ma">
+    <div id="map"></div>
+  </div>
+</div>
+
+<div id="ctt">
+  <button id="ctt-close" onclick="closeTT()">×</button>
+  <div id="ctt-body"></div>
 </div>
 
 <script>
-const SHEET='1Fi9Y3aiAJdIaaAboqe2eK_g95YGHXppV';
-const SC={'Saudável':'#22c55e','Atenção':'#f59e0b','Crítico':'#ef4444','':'#475569'};
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const SHEET = '1Fi9Y3aiAJdIaaAboqe2eK_g95YGHXppV';
+const SC = {'Saudável':'#22c55e','Atenção':'#f59e0b','Crítico':'#ef4444','':'#4b5a6b'};
+const BZ_BOUNDS = [[-33.75,-73.99],[5.27,-28.65]];
 
-const GEO={
+// Real geographic coordinates
+const GEO = {
   'BP SP MOEMA':           [-23.598,-46.655],
   'BP SÃO PAULO BERRINI':  [-23.597,-46.692],
   'BP ABC PAULISTA':       [-23.710,-46.533],
@@ -410,34 +293,16 @@ const GEO={
   'BP NORTE DE MINAS':        [-16.721,-43.861],
   'BP RIO GRANDE DO NORTE':   [-5.793,-35.209],
 };
-const GEO_ROT={
-  // SP hexágono — each pin leans outward from SP center
-  'BP SP MOEMA':0,           // top — straight up
-  'BP SÃO PAULO BERRINI':30, // top-right — lean right
-  'BP ABC PAULISTA':60,      // bottom-right — lean more right  
-  'BP SUDESTE PAULISTA':0,   // bottom — straight (inverted via position)
-  'BP ALPHAVILLE':-60,       // bottom-left — lean left
-  'BP JUNDIAÍ':-30,          // top-left — lean left
-  // SC/PR quad
-  'BP CURITIBA':-25,
-  'BP NORTE CATARINENSE':25,
-  'BP LITORAL CATARINENSE':25,
-  'BP SANTA CATARINA':-25,
-  // DCs pentagon
-  'Delivery Center - Andreia':0,
-  'Delivery Center - Kassius':20,
-  'Delivery Center - Carol':35,
-  'Delivery Center - Enterprise':-35,
-  'Delivery Center - Thiago':-20,
-};
 
-
-const CITY={
-  'BP SP MOEMA':'São Paulo','BP RECIFE':'Recife','BP VITORIA DA CONQUISTA':'Vitória da Conquista',
-  'BP ABC PAULISTA':'Santo André','BP ALPHAVILLE':'Alphaville','BP BANDEIRANTES':'Bandeirantes',
-  'BP BH PAMPULHA':'Belo Horizonte','BP JUNDIAÍ':'Jundiaí','BP SUDESTE PAULISTA':'Sorocaba',
-  'BP SÃO PAULO BERRINI':'São Paulo','BP CEARÁ':'Fortaleza','BP MARANHÃO':'São Luís',
-  'BP PARÁ':'Belém','BP RIO DE JANEIRO':'Rio de Janeiro','BP CURITIBA':'Curitiba',
+const CITY = {
+  'BP SP MOEMA':'São Paulo','BP SÃO PAULO BERRINI':'São Paulo',
+  'BP ABC PAULISTA':'Santo André','BP SUDESTE PAULISTA':'Sorocaba',
+  'BP ALPHAVILLE':'Alphaville','BP JUNDIAÍ':'Jundiaí',
+  'BP RECIFE':'Recife','BP VITORIA DA CONQUISTA':'Vitória da Conquista',
+  'BP BANDEIRANTES':'Bandeirantes','BP BH PAMPULHA':'Belo Horizonte',
+  'BP CEARÁ':'Fortaleza','BP MARANHÃO':'São Luís',
+  'BP PARÁ':'Belém','BP CENTRO NORTE':'Belém',
+  'BP RIO DE JANEIRO':'Rio de Janeiro','BP CURITIBA':'Curitiba',
   'BP INTERIOR PARANAENSE':'Londrina','BP LITORAL CATARINENSE':'Balneário Camboriú',
   'BP MATO GROSSO':'Cuiabá','BP MATO GROSSO DO SUL':'Campo Grande',
   'BP NORTE CATARINENSE':'Joinville','BP NORTE DE MINAS':'Montes Claros',
@@ -447,492 +312,393 @@ const CITY={
   'Delivery Center - Thiago':'Uberlândia',
 };
 
-let allU=[],aS=new Set(),aT='ALL',aG='ALL',hl=null;
-let map, mkMap={};
-let openPopup=null; // controla qual popup está aberto
+// Pin tilt angles (degrees) for visual separation within clusters
+const PIN_ROT = {
+  'BP SP MOEMA':0,'BP SÃO PAULO BERRINI':30,'BP ABC PAULISTA':60,
+  'BP SUDESTE PAULISTA':0,'BP ALPHAVILLE':-60,'BP JUNDIAÍ':-30,
+  'BP CURITIBA':-25,'BP NORTE CATARINENSE':25,
+  'BP LITORAL CATARINENSE':20,'BP SANTA CATARINA':-20,
+  'Delivery Center - Andreia':0,'Delivery Center - Kassius':25,
+  'Delivery Center - Carol':40,'Delivery Center - Enterprise':-40,
+  'Delivery Center - Thiago':-25,
+};
 
-const BZ=[[-33.75,-73.99],[5.27,-28.65]];
-function initMap(){
-  map=L.map('map',{center:[-15.0,-53.0],zoom:4,zoomControl:false,minZoom:3,maxZoom:13});
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19
+// Pixel offsets for cluster separation (applied via iconAnchor)
+// Scales with zoom: small when zoomed out, full when zoomed in
+const PX_OFF = {
+  // SP hexagon
+  'BP SP MOEMA':           [ 0,-16],'BP SÃO PAULO BERRINI': [14, -8],
+  'BP ABC PAULISTA':       [14,  8],'BP SUDESTE PAULISTA':  [ 0, 16],
+  'BP ALPHAVILLE':         [-14, 8],'BP JUNDIAÍ':           [-14,-8],
+  // SC/PR quad
+  'BP CURITIBA':           [-12,-12],'BP NORTE CATARINENSE': [12,-12],
+  'BP LITORAL CATARINENSE':[12, 12],'BP SANTA CATARINA':    [-12,12],
+  // DCs pentagon
+  'Delivery Center - Andreia':    [ 0,-16],'Delivery Center - Kassius':    [15,-5],
+  'Delivery Center - Carol':      [10, 13],'Delivery Center - Enterprise': [-10,13],
+  'Delivery Center - Thiago':     [-15,-5],
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let map, allU=[], mkMap={};
+let activeStatus=new Set(), activeType='ALL', activeGrp='ALL', hlUnit=null;
+let pinnedMk=null, hideTTTimer=null;
+
+// ═══════════════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════════════
+function initMap() {
+  map = L.map('map', {center:[-15,-53], zoom:4, zoomControl:false, minZoom:3, maxZoom:13});
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>', maxZoom:19
   }).addTo(map);
-  setTimeout(()=>map.fitBounds(BZ,{padding:[24,24]}),200);
-  const ctrl=L.control({position:'topleft'});
-  ctrl.onAdd=function(){
-    const d=L.DomUtil.create('div','ctrlbox');
-    d.innerHTML=
-      '<button class="cbtn" onclick="map.zoomIn()">+</button>'+
-      '<button class="cbtn" onclick="map.zoomOut()">−</button>'+
-      '<button class="cbtn cbtn-c" onclick="map.fitBounds(BZ,{padding:[24,24],animate:true})" title="Ver Brasil">'+
-        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'+
+
+  setTimeout(() => map.fitBounds(BZ_BOUNDS, {padding:[24,24]}), 200);
+
+  // Custom controls
+  const ctrl = L.control({position:'topleft'});
+  ctrl.onAdd = function() {
+    const d = L.DomUtil.create('div','ctrlbox');
+    d.innerHTML =
+      '<button class="cbtn" onclick="map.zoomIn()" title="Aproximar">+</button>' +
+      '<button class="cbtn" onclick="map.zoomOut()" title="Afastar">−</button>' +
+      '<button class="cbtn cbtn-sep" onclick="map.fitBounds(' + JSON.stringify(BZ_BOUNDS) + ',{padding:[24,24],animate:true})" title="Ver Brasil">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>' +
+          '<line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>' +
+        '</svg>' +
       '</button>';
     L.DomEvent.disableClickPropagation(d);
     return d;
   };
   ctrl.addTo(map);
-  map.on('click',()=>closeTT());
-  map.on('zoomend',()=>{
-    allU.forEach(u=>{const mk=mkMap[u.nome];if(mk)mk.setIcon(makeIcon(u));});
-  });
-  // Fit Brazil fully visible
-  setTimeout(()=>map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28]}),200);
-  // Custom controls: zoom + recenter
-  }
 
-
-function closeOpenPopup(){closeTT();}
-
-async function loadData(){
-  const si=document.getElementById('si');
-  si.classList.add('go');
-
-  // Multiple strategies - try each until one returns valid CSV data
-  const strategies=[
-    // Strategy 1: gviz endpoint (most reliable, no auth required)
-    async()=>{
-      const url=`https://docs.google.com/spreadsheets/d/${SHEET}/gviz/tq?tqx=out:csv&gid=0&t=${Date.now()}`;
-      const r=await fetchWithTimeout(url,8000);
-      const txt=await r.text();
-      if(txt.includes(',')) return txt;
-      throw new Error('not csv');
-    },
-    // Strategy 2: allorigins proxy
-    async()=>{
-      const url=encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET}/export?format=csv&gid=0`);
-      const r=await fetchWithTimeout(`https://api.allorigins.win/get?url=${url}&t=${Date.now()}`,8000);
-      const j=await r.json();
-      const txt=j.contents||'';
-      if(txt.includes(',')) return txt;
-      throw new Error('empty');
-    },
-    // Strategy 3: corsproxy.io
-    async()=>{
-      const url=encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET}/export?format=csv&gid=0`);
-      const r=await fetchWithTimeout(`https://corsproxy.io/?${url}&t=${Date.now()}`,8000);
-      const txt=await r.text();
-      if(txt.includes(',')) return txt;
-      throw new Error('empty');
-    },
-  ];
-
-  let loaded=false;
-  for(const strategy of strategies){
-    try{
-      const txt=await strategy();
-      const rows=parseCSV(txt);
-      const units=rows
-        .filter(r=>r[1]&&r[1].trim()&&r[1].trim()!=='Unidade'&&r[0].trim()!=='#'&&!r[1].includes('<')&&r[1].trim().length<60&&r[0].trim()!==''&&!isNaN(Number(r[0].trim())))
-        .map(r=>({
-          nome:r[1]?.trim(),
-          tipo:r[2]?.trim()||'BP',
-          grp:r[3]?.trim()||'',
-          termo:r[4]?.trim()||'',
-          obs:r[5]?.trim()||''
-        }));
-      if(units.length>=5){
-        allU=units;
-        showStatus('ok');
-        loaded=true;
-        break;
-      }
-    }catch(e){
-      console.warn('Strategy failed:',e.message);
-    }
-  }
-
-  if(!loaded){
-    showStatus('offline');
-    showMapError();
-  }
-
-  si.classList.remove('go');
-  buildUI();
-}
-
-function fetchWithTimeout(url,ms){
-  return Promise.race([
-    fetch(url,{cache:'no-store'}),
-    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout '+ms+'ms')),ms))
-  ]);
-}
-
-
-function parseCSV(txt){
-  return txt.split('\n').map(l=>{
-    const c=[];let cur='',iq=false;
-    for(const ch of l){if(ch==='"')iq=!iq;else if(ch===','&&!iq){c.push(cur);cur='';}else cur+=ch;}
-    c.push(cur);return c;
+  map.on('click', () => closeTT());
+  map.on('zoomend', () => {
+    allU.forEach(u => { const mk=mkMap[u.nome]; if(mk) mk.setIcon(makeIcon(u)); });
   });
 }
 
-function fallback(){
-  // SEM dados locais — exibe erro claro
-  allU=[];
-  showStatus('offline');
-  const val=document.getElementById('last-upd-val');
-  if(val){
-    val.style.color='var(--cr)';
-    val.textContent='ERRO — sem conexão com a planilha';
-    val.style.fontSize='11px';
-  }
-  // Mostra overlay de erro no mapa
-  const ma=document.getElementById('map');
-  let err=document.getElementById('map-err');
-  if(!err){
-    err=document.createElement('div');
-    err.id='map-err';
-    err.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(4,9,5,.92);z-index:999;gap:12px';
-    err.innerHTML=`
-      <div style="font-size:40px">⚠️</div>
-      <div style="font-size:18px;font-weight:600;color:#ef4444">Não foi possível ler a planilha</div>
-      <div style="font-size:13px;color:#7aa887;text-align:center;max-width:360px;line-height:1.6">
-        O mapa só funciona publicado online (Netlify, etc).<br>
-        Abrindo como arquivo local o browser bloqueia o acesso ao Google Sheets.
-      </div>
-      <button onclick="manualRefresh();document.getElementById('map-err')?.remove()" style="
-        background:#1c8c52;border:none;color:#fff;padding:10px 24px;
-        border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;margin-top:8px
-      ">↻ Tentar novamente</button>`;
-    document.querySelector('.ma').style.position='relative';
-    document.querySelector('.ma').appendChild(err);
-  }
-}
+// ═══════════════════════════════════════════════════════
+// MARKER ICON
+// ═══════════════════════════════════════════════════════
+function makeIcon(u) {
+  const col = SC[u.termo] || SC[''];
+  const isDC = u.tipo === 'DC';
+  const isCritico = u.termo === 'Crítico';
+  const rot = PIN_ROT[u.nome] || 0;
 
+  // Size grows with zoom
+  const z = map ? map.getZoom() : 4;
+  const fs   = z<=4?12 : z<=5?16 : z<=6?19 : z<=7?22 : 25;
+  const stem = z<=4?8  : z<=5?11 : z<=6?13 : z<=7?15 : 17;
+  const totalH = fs + stem + 5;
+  const showLbl = fs >= 16;
 
-function buildUI(){
-  const s=allU.filter(u=>u.termo==='Saudável').length,
-        a=allU.filter(u=>u.termo==='Atenção').length,
-        c=allU.filter(u=>u.termo==='Crítico').length,
-        n=allU.filter(u=>!u.termo).length;
-  ['csv','fcs'].forEach(id=>document.getElementById(id).textContent=s);
-  ['cat','fca'].forEach(id=>document.getElementById(id).textContent=a);
-  ['ccr','fcc'].forEach(id=>document.getElementById(id).textContent=c);
-  ['cns','fcn'].forEach(id=>document.getElementById(id).textContent=n);
-  document.getElementById('ctot').textContent=allU.length;
-  // init percentages
-  const _tot=allU.length;
-  const _pct=v=>_tot>0?Math.round(v/(_tot)*100)+'%':'—';
-  document.getElementById('pcsv').textContent=_pct(s);
-  document.getElementById('pcat').textContent=_pct(a);
-  document.getElementById('pccr').textContent=_pct(c);
-  document.getElementById('pcns').textContent=_pct(n);
-  const grps=[...new Set(allU.map(u=>u.grp).filter(Boolean))].sort();
-  const sel=document.getElementById('gsel');
-  sel.innerHTML='<option value="ALL">Todos os GRPs</option>';
-  grps.forEach(g=>{const o=document.createElement('option');o.value=o.textContent=g;sel.appendChild(o);});
-  createAllMarkers();
-  renderAll();
-}
-
-function getVis(){
-  return new Set(allU.filter(u=>{
-    if(aT!=='ALL'&&u.tipo!==aT)return false;
-    if(aG!=='ALL'&&u.grp!==aG)return false;
-    if(aS.size>0&&!aS.has(u.termo))return false;
-    return true;
-  }).map(u=>u.nome));
-}
-
-
-// Pixel offsets para separar clusters visualmente (não muda coordenada geográfica)
-// [dx, dy] — pequenos o suficiente para não parecer errado geograficamente
-const PX_OFF={
-  // DCs Uberlândia — pentágono 18px
-  'Delivery Center - Andreia':    [ 0,-18],
-  'Delivery Center - Kassius':    [17, -6],
-  'Delivery Center - Carol':      [11, 15],
-  'Delivery Center - Enterprise': [-11,15],
-  'Delivery Center - Thiago':     [-17,-6],
-  // SP — hexágono 18px
-  'BP SP MOEMA':           [ 0,-18],
-  'BP SÃO PAULO BERRINI':  [16, -9],
-  'BP ABC PAULISTA':       [16,  9],
-  'BP SUDESTE PAULISTA':   [ 0, 18],
-  'BP ALPHAVILLE':         [-16, 9],
-  'BP JUNDIAÍ':            [-16,-9],
-  // SC/PR — quadrado 14px
-  'BP CURITIBA':           [-14,-14],
-  'BP NORTE CATARINENSE':  [ 14,-14],
-  'BP LITORAL CATARINENSE':[ 14, 14],
-  'BP SANTA CATARINA':     [-14, 14],
-};
-function makeIcon(u){
-  const col=SC[u.termo]||SC[''];
-  const isDC=u.tipo==='DC';
-  const isCritico=u.termo==='Crítico';
-  const rot=GEO_ROT[u.nome]||0;
-  // Pin size grows with zoom
-  const z=map?map.getZoom():4;
-  const fs = z<=4?13 : z<=5?17 : z<=6?20 : z<=7?23 : 26;
-  const stem = z<=4?9  : z<=5?12 : z<=6?14 : z<=7?16 : 18;
-  const totalH=fs+stem+5;
-  const showLabel = fs>=17;
+  // Pixel offset scales with zoom (less when zoomed out)
+  const off = PX_OFF[u.nome] || [0,0];
+  const f = z<=4?0.5 : z<=5?0.75 : z<=6?0.9 : 1.0;
+  const dx = Math.round(off[0]*f);
+  const dy = Math.round(off[1]*f);
 
   return L.divIcon({
-    className:'',
-    html:`<div class="pin-wrap${isCritico?' pin-critico':''}"
-      style="width:${totalH}px;height:${totalH}px;align-items:center;transform-origin:bottom center;transform:rotate(${rot}deg)">
-      <div class="pin-flag" style="width:${fs}px;height:${fs}px;background:${col};color:${col}">
-        <span class="pin-flag-inner" style="font-size:${Math.max(6,Math.round(fs*0.32))}px;transform:rotate(${45-rot}deg)">${showLabel?(isDC?'DC':'BP'):''}</span>
+    className: '',
+    html: `<div class="pin-wrap${isCritico?' pin-critico':''}" style="width:${totalH}px;height:${totalH}px;transform-origin:bottom center;transform:rotate(${rot}deg)">
+      <div class="pin-flag" style="width:${fs}px;height:${fs}px;background:${col}">
+        <span class="pin-lbl" style="font-size:${Math.max(6,Math.round(fs*.32))}px;transform:rotate(${45-rot}deg)">${showLbl?(isDC?'DC':'BP'):''}</span>
       </div>
       <div class="pin-stem" style="height:${stem}px;background:${col}"></div>
       <div class="pin-shadow"></div>
     </div>`,
-    // Scale pixel offset by zoom — small offset when zoomed out
-    const _off=PX_OFF[u.nome]||[0,0];
-    const _f=z<=4?0.45:z<=5?0.75:z<=6?0.9:1.0;
-    const _dx=Math.round(_off[0]*_f);
-    const _dy=Math.round(_off[1]*_f);
-    iconSize:[totalH,totalH],
-    iconAnchor:[Math.round(totalH/2)-_dx, totalH-1-_dy],
-    popupAnchor:[0,-totalH],
+    iconSize: [totalH, totalH],
+    iconAnchor: [Math.round(totalH/2)-dx, totalH-1-dy],
+    popupAnchor: [0, -totalH],
   });
 }
 
-function buildPopup(u){
-  const col=SC[u.termo]||SC[''];
-  const sl=u.termo||'Sem status';
-  const city=CITY[u.nome]||'';
-  return `<div class="tnm">${u.nome}</div>
-    <div class="tpp"><span class="tpi ${u.tipo==='DC'?'pdc':'pbp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
-    <div class="trow">GRP: <span>${u.grp||'—'}</span></div>
-    ${city?`<div class="trow" style="margin-bottom:6px">Cidade: <span>${city}</span></div>`:''}
-    <span class="tst" style="background:${col}22;color:${col}">
-      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}
-    </span>
-    ${u.obs?`<div class="tob">${u.obs}</div>`:`<div class="tnob">Sem comentários registrados.</div>`}`;
+// ═══════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════
+function fetchWithTimeout(url, ms) {
+  return Promise.race([
+    fetch(url, {cache:'no-store'}),
+    new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), ms))
+  ]);
 }
 
-function openMk(mk){
-  // Fecha o anterior antes de abrir
-  if(openPopup && openPopup!==mk){
-    openPopup.closePopup();
+async function loadData() {
+  document.getElementById('si').classList.add('go');
+  const base = 'https://docs.google.com/spreadsheets/d/'+SHEET;
+  const strategies = [
+    async () => {
+      const r = await fetchWithTimeout(base+'/gviz/tq?tqx=out:csv&gid=0&t='+Date.now(), 7000);
+      const t = await r.text(); if(t.includes(',')) return t; throw new Error('bad');
+    },
+    async () => {
+      const r = await fetchWithTimeout('https://api.allorigins.win/get?url='+encodeURIComponent(base+'/export?format=csv&gid=0')+'&t='+Date.now(), 7000);
+      const j = await r.json(); if(j.contents?.includes(',')) return j.contents; throw new Error('bad');
+    },
+    async () => {
+      const r = await fetchWithTimeout('https://corsproxy.io/?'+encodeURIComponent(base+'/export?format=csv&gid=0')+'&t='+Date.now(), 7000);
+      const t = await r.text(); if(t.includes(',')) return t; throw new Error('bad');
+    },
+  ];
+
+  let loaded = false;
+  for (const fn of strategies) {
+    try {
+      const txt = await fn();
+      const rows = parseCSV(txt).filter(r =>
+        r[1] && r[1].trim() && r[1].trim() !== 'Unidade' &&
+        r[0].trim() !== '#' && !r[1].includes('<') &&
+        r[1].trim().length < 60 && !isNaN(Number(r[0].trim()))
+      );
+      if (rows.length >= 5) {
+        allU = rows.map(r => ({
+          nome: r[1]?.trim(), tipo: r[2]?.trim()||'BP',
+          grp:  r[3]?.trim()||'', termo: r[4]?.trim()||'',
+          obs:  r[5]?.trim()||'',
+        }));
+        showStatus('ok');
+        loaded = true;
+        break;
+      }
+    } catch(e) { /* try next */ }
   }
-  mk.openPopup();
-  openPopup=mk;
+
+  if (!loaded) showStatus('offline');
+  document.getElementById('si').classList.remove('go');
+  buildUI();
 }
 
-function createAllMarkers(){
-  allU.forEach(u=>{
-    const geo=GEO[u.nome];if(!geo)return;
-    // Se já existe, atualiza popup e ícone (dados podem ter mudado na planilha)
-    if(mkMap[u.nome]){
-      mkMap[u.nome].setIcon(makeIcon(u));
-      mkMap[u.nome].setPopupContent(buildPopup(u));
-      return;
+function parseCSV(txt) {
+  return txt.split('\n').map(line => {
+    const cells=[]; let cur='', inQ=false;
+    for (const ch of line) {
+      if (ch==='"') inQ=!inQ;
+      else if (ch===',' && !inQ) { cells.push(cur); cur=''; }
+      else cur+=ch;
     }
-
-    const mk=L.marker(geo,{
-      icon:makeIcon(u),
-      zIndexOffset:u.termo==='Crítico'?200:100
-    }).addTo(map);
-
-    // tooltip handled by custom-tt
-
-    mk.on('mouseover',function(e){showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);});
-    mk.on('mousemove',function(e){if(!this._pinned)showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);});
-    mk.on('mouseout',function(){if(!this._pinned){hideTTTimer=setTimeout(closeTT,250);}});
-    mk.on('click',function(e){
-      L.DomEvent.stopPropagation(e);
-      if(this._pinned){this._pinned=false;pinnedMk=null;closeTT();}
-      else{
-        if(pinnedMk&&pinnedMk!==this)pinnedMk._pinned=false;
-        this._pinned=true;pinnedMk=this;
-        showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);
-        hlItem(u.nome);map.setView(geo,7,{animate:true,duration:.4});
-      }
-    });
-
-    mkMap[u.nome]=mk;
+    cells.push(cur);
+    return cells;
   });
 }
 
-function renderAll(){
-  const vis=getVis();
-  document.getElementById('vc').textContent=vis.size;
-  const visArr=[...vis].map(n=>allU.find(u=>u.nome===n)).filter(Boolean);
-  const sv=visArr.filter(u=>u.termo==='Saudável').length;
-  const at=visArr.filter(u=>u.termo==='Atenção').length;
-  const cr=visArr.filter(u=>u.termo==='Crítico').length;
-  const ns=visArr.filter(u=>!u.termo).length;
-  const tot=vis.size;
-  const pct=v=>tot>0?Math.round(v/tot*100)+'%':'—';
-  ['csv','fcs'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=sv;});
-  ['cat','fca'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=at;});
-  ['ccr','fcc'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=cr;});
-  ['cns','fcn'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=ns;});
-  document.getElementById('ctot').textContent=tot;
-  ['pcsv','fcs'].forEach(()=>{});
-  const setPct=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=pct(v);};
-  setPct('pcsv',sv);setPct('pcat',at);setPct('pccr',cr);setPct('pcns',ns);
-  const setBar=(sel,v)=>{const el=document.querySelector(sel);if(el)el.style.setProperty('--bar-w',(tot>0?Math.round(v/tot*100):0)+'%');};
-  setBar('.sfb[data-s="Saudável"]',sv);setBar('.sfb[data-s="Atenção"]',at);setBar('.sfb[data-s="Crítico"]',cr);setBar('.sfb[data-s=""]',ns);
-
-  allU.forEach(u=>{
-    const mk=mkMap[u.nome];if(!mk)return;
-    const el=mk.getElement();
-    if(el){
-      const w=el.querySelector('.pin-wrap');
-      if(w)w.classList.toggle('dim',!vis.has(u.nome));
-    }
-  });
-  renderList([...vis].map(n=>allU.find(u=>u.nome===n)).filter(Boolean));
+function showStatus(type) {
+  const el = document.getElementById('upd-val');
+  if (!el) return;
+  const now = new Date();
+  const d = now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const t = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.style.color = type==='ok' ? 'var(--gl)' : 'var(--at)';
+  el.textContent = type==='ok' ? `${d} ● ${t}` : `offline ${t}`;
 }
 
-function renderList(vis){
-  const list=document.getElementById('ulist');
-  list.innerHTML='';
-  vis.forEach(u=>{
-    const col=SC[u.termo]||SC[''];
-    const el=document.createElement('div');
-    el.className='ui'+(hl===u.nome?' hl':'');
-    el.dataset.nome=u.nome;
-    el.innerHTML=`<span class="ud" style="background:${col};box-shadow:0 0 5px ${col}"></span><span class="un">${u.nome}</span><span class="ub">${u.tipo}</span>`;
-    el.onclick=()=>{
-      // Fecha popup anterior
-      if(openPopup && openPopup!==mkMap[u.nome]){
-        openPopup._pinned=false;
-        openPopup.closePopup();
-        openPopup=null;
-      }
-      hlItem(u.nome);
-      const geo=GEO[u.nome];
-      if(geo)map.setView(geo,7,{animate:true,duration:.4});
+// ═══════════════════════════════════════════════════════
+// BUILD UI
+// ═══════════════════════════════════════════════════════
+function buildUI() {
+  // Populate GRP dropdown
+  const grps = [...new Set(allU.map(u=>u.grp).filter(Boolean))].sort();
+  const sel = document.getElementById('gsel');
+  sel.innerHTML = '<option value="ALL">Todos os GRPs</option>';
+  grps.forEach(g => { const o=document.createElement('option'); o.value=o.textContent=g; sel.appendChild(o); });
+  // Create/update all markers
+  createAllMarkers();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function getVisible() {
+  return new Set(allU.filter(u => {
+    if (activeType!=='ALL' && u.tipo!==activeType) return false;
+    if (activeGrp!=='ALL' && u.grp!==activeGrp) return false;
+    if (activeStatus.size>0 && !activeStatus.has(u.termo)) return false;
+    return true;
+  }).map(u => u.nome));
+}
+
+function renderAll() {
+  const vis = getVisible();
+  const visArr = [...vis].map(n => allU.find(u=>u.nome===n)).filter(Boolean);
+  const tot = vis.size;
+  const s = visArr.filter(u=>u.termo==='Saudável').length;
+  const a = visArr.filter(u=>u.termo==='Atenção').length;
+  const c = visArr.filter(u=>u.termo==='Crítico').length;
+  const n = visArr.filter(u=>!u.termo).length;
+  const pct = v => tot>0 ? Math.round(v/tot*100)+'%' : '—';
+
+  // Update counters
+  document.getElementById('cv-s').textContent=s; document.getElementById('cp-s').textContent=pct(s);
+  document.getElementById('cv-a').textContent=a; document.getElementById('cp-a').textContent=pct(a);
+  document.getElementById('cv-c').textContent=c; document.getElementById('cp-c').textContent=pct(c);
+  document.getElementById('cv-n').textContent=n; document.getElementById('cp-n').textContent=pct(n);
+  document.getElementById('cv-t').textContent=tot;
+  document.getElementById('vis-cnt').textContent=tot;
+  document.getElementById('sf-s').textContent=s;
+  document.getElementById('sf-a').textContent=a;
+  document.getElementById('sf-c').textContent=c;
+  document.getElementById('sf-n').textContent=n;
+
+  // Progress bars on sidebar
+  const pb=(sel,v)=>{ const el=document.querySelector(sel); if(el) el.style.setProperty('--bw',(tot>0?Math.round(v/tot*100):0)+'%'); };
+  pb('.sfb[data-s="Saudável"]',s); pb('.sfb[data-s="Atenção"]',a);
+  pb('.sfb[data-s="Crítico"]',c); pb('.sfb[data-s=""]',n);
+
+  // Markers dim/show
+  allU.forEach(u => {
+    const mk = mkMap[u.nome]; if(!mk) return;
+    const el = mk.getElement();
+    if (el) { const w=el.querySelector('.pin-wrap'); if(w) w.classList.toggle('dim',!vis.has(u.nome)); }
+  });
+
+  // List
+  const list = document.getElementById('ulist');
+  list.innerHTML = '';
+  visArr.forEach(u => {
+    const col = SC[u.termo]||SC[''];
+    const el = document.createElement('div');
+    el.className = 'ui'+(hlUnit===u.nome?' hl':'');
+    el.dataset.nome = u.nome;
+    el.innerHTML = `<span class="udot" style="background:${col};box-shadow:0 0 5px ${col}"></span><span class="uname">${u.nome}</span><span class="ubadge">${u.tipo}</span>`;
+    el.onclick = () => {
+      hlUnit = hlUnit===u.nome ? null : u.nome;
+      document.querySelectorAll('.ui').forEach(e=>e.classList.toggle('hl',e.dataset.nome===hlUnit));
+      const geo=GEO[u.nome]; if(geo) map.setView(geo,7,{animate:true,duration:.4});
       const mk=mkMap[u.nome];
-      if(mk){if(pinnedMk&&pinnedMk!==mk)pinnedMk._pinned=false;mk._pinned=true;pinnedMk=mk;
-        const el=mk.getElement();const r=el?el.getBoundingClientRect():{left:window.innerWidth/2,top:200,width:0};
-        showTT(u,r.left+r.width/2,r.top);}
+      if(mk){ if(pinnedMk&&pinnedMk!==mk) pinnedMk._pinned=false; mk._pinned=true; pinnedMk=mk;
+        const r=mk.getElement()?.getBoundingClientRect()||{left:window.innerWidth/2,top:300,width:0};
+        showTT(u, r.left+r.width/2, r.top); }
     };
     list.appendChild(el);
   });
 }
 
-function hlItem(n){
-  hl=hl===n?null:n;
-  document.querySelectorAll('.ui').forEach(e=>e.classList.toggle('hl',e.dataset.nome===hl));
-}
-
-// ── LAST UPDATED STATUS ──────────────────────────────────────
-let lastLoaded=null;
-function showStatus(type){
-  const val=document.getElementById('last-upd-val');
-  if(!val)return;
-  const now=new Date();
-  const date=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
-  const time=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  if(type==='ok'){
-    val.style.color='var(--gl)';
-    val.title='Lido direto da planilha Google Sheets';
-    val.textContent=date+' ● '+time;
-  } else {
-    val.style.color='var(--at)';
-    val.title='Não foi possível ler a planilha — usando dados locais';
-    val.textContent='local ▲ '+time;
-  }
-}
-
-// ── AUTO-REFRESH ─────────────────────────────────────────────
-let autoOn=false, autoTimer=null, autoCountdown=0;
-const AUTO_INTERVAL=300; // 5 minutos em segundos
-
-function toggleAuto(){
-  autoOn=!autoOn;
-  const track=document.getElementById('tog-track');
-  const dot=document.getElementById('auto-dot');
-  const cd=document.getElementById('auto-cd');
-  track.classList.toggle('on',autoOn);
-  dot.classList.toggle('on',autoOn);
-  if(autoOn){
-    startAutoRefresh();
-  } else {
-    clearInterval(autoTimer);
-    autoTimer=null;
-    cd.textContent='';
-  }
-}
-
-function startAutoRefresh(){
-  autoCountdown=AUTO_INTERVAL;
-  updateCountdownDisplay();
-  clearInterval(autoTimer);
-  autoTimer=setInterval(()=>{
-    autoCountdown--;
-    updateCountdownDisplay();
-    if(autoCountdown<=0){
-      autoCountdown=AUTO_INTERVAL;
-      loadData();
+// ═══════════════════════════════════════════════════════
+// MARKERS
+// ═══════════════════════════════════════════════════════
+function createAllMarkers() {
+  allU.forEach(u => {
+    const geo = GEO[u.nome]; if(!geo) return;
+    if (mkMap[u.nome]) {
+      mkMap[u.nome].setIcon(makeIcon(u));
+      return;
     }
-  },1000);
-}
-
-function updateCountdownDisplay(){
-  const cd=document.getElementById('auto-cd');
-  if(!autoOn){cd.textContent='';return;}
-  const m=Math.floor(autoCountdown/60);
-  const s=autoCountdown%60;
-  cd.textContent=m>0?`${m}:${String(s).padStart(2,'0')}`:`${s}s`;
-}
-
-function manualRefresh(){
-  const si=document.getElementById('si');
-  si.classList.add('go');
-  loadData().finally(()=>si.classList.remove('go'));
-  if(autoOn){ autoCountdown=AUTO_INTERVAL; }
-}
-
-function tS(s){
-  if(aS.has(s))aS.delete(s);else aS.add(s);
-  document.querySelectorAll('.ci[data-s]').forEach(e=>e.classList.toggle('on',aS.has(e.dataset.s)));
-  document.querySelectorAll('.sfb[data-s]').forEach(e=>e.classList.toggle('on',aS.has(e.dataset.s)));
-  renderAll();
-}
-function setT(t,b){aT=t;document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderAll();}
-function setG(v){aG=v;renderAll();}
-
-
-let pinnedMk=null,hideTTTimer=null;
-function showTT(u,cx,cy){
-  clearTimeout(hideTTTimer);
-  const col=SC[u.termo]||SC[''];
-  const sl=u.termo||'Sem status';
-  const city=CITY[u.nome]||'';
-  document.getElementById('custom-tt-body').innerHTML=`
-    <div class="tnm">${u.nome}</div>
-    <div class="tpp"><span class="tpi ${u.tipo==='DC'?'pdc':'pbp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
-    <div class="trow">GRP: <span>${u.grp||'—'}</span></div>
-    ${city?`<div class="trow" style="margin-bottom:6px">Cidade: <span>${city}</span></div>`:''}
-    <span class="tst" style="background:${col}22;color:${col}"><span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}</span>
-    ${u.obs?`<div class="tob">${u.obs}</div>`:`<div class="tnob">Sem comentários.</div>`}`;
-  const tt=document.getElementById('custom-tt');
-  tt.classList.add('show');
-  requestAnimationFrame(()=>{
-    const W=window.innerWidth,H=window.innerHeight,tw=tt.offsetWidth,th=tt.offsetHeight;
-    let x=cx+16,y=cy-th-16;
-    if(x+tw>W-12)x=cx-tw-16;
-    if(x<8)x=8;
-    if(y<8)y=cy+16;
-    if(y+th>H-8)y=H-th-8;
-    tt.style.left=x+'px';tt.style.top=y+'px';
+    const mk = L.marker(geo, {icon:makeIcon(u), zIndexOffset:u.termo==='Crítico'?200:100}).addTo(map);
+    mk.on('mouseover', e => showTT(u, e.originalEvent.clientX, e.originalEvent.clientY));
+    mk.on('mousemove', e => { if(!mk._pinned) showTT(u, e.originalEvent.clientX, e.originalEvent.clientY); });
+    mk.on('mouseout', () => { if(!mk._pinned) hideTTTimer=setTimeout(closeTT,250); });
+    mk.on('click', e => {
+      L.DomEvent.stopPropagation(e);
+      if (mk._pinned) { mk._pinned=false; pinnedMk=null; closeTT(); }
+      else {
+        if (pinnedMk&&pinnedMk!==mk) pinnedMk._pinned=false;
+        mk._pinned=true; pinnedMk=mk;
+        showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
+        hlUnit=u.nome; document.querySelectorAll('.ui').forEach(el=>el.classList.toggle('hl',el.dataset.nome===hlUnit));
+        map.setView(geo,7,{animate:true,duration:.4});
+      }
+    });
+    mkMap[u.nome] = mk;
   });
 }
-function closeTT(){
-  document.getElementById('custom-tt').classList.remove('show');
-  if(pinnedMk){pinnedMk._pinned=false;pinnedMk=null;}
+
+// ═══════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════
+function showTT(u, cx, cy) {
+  clearTimeout(hideTTTimer);
+  const col = SC[u.termo]||SC[''];
+  const sl = u.termo||'Sem status';
+  const city = CITY[u.nome]||'';
+  document.getElementById('ctt-body').innerHTML = `
+    <div class="tt-nm">${u.nome}</div>
+    <div class="tt-pills"><span class="tt-pi ${u.tipo==='DC'?'pi-dc':'pi-bp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
+    <div class="tt-row">GRP: <span>${u.grp||'—'}</span></div>
+    ${city?`<div class="tt-row" style="margin-bottom:5px">Cidade: <span>${city}</span></div>`:''}
+    <span class="tt-st" style="background:${col}20;color:${col}">
+      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}
+    </span>
+    ${u.obs?`<div class="tt-obs">${u.obs}</div>`:`<div class="tt-nobs">Sem comentários.</div>`}`;
+  const tt = document.getElementById('ctt');
+  tt.classList.add('show');
+  requestAnimationFrame(() => {
+    const W=window.innerWidth, H=window.innerHeight, tw=tt.offsetWidth, th=tt.offsetHeight;
+    let x=cx+16, y=cy-th-16;
+    if (x+tw>W-12) x=cx-tw-16;
+    if (x<8) x=8;
+    if (y<8) y=cy+16;
+    if (y+th>H-8) y=H-th-8;
+    tt.style.left=x+'px'; tt.style.top=y+'px';
+  });
 }
 
-window.addEventListener('load',async()=>{
+function closeTT() {
+  document.getElementById('ctt').classList.remove('show');
+  if (pinnedMk) { pinnedMk._pinned=false; pinnedMk=null; }
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════════
+function toggleStatus(s) {
+  if (activeStatus.has(s)) activeStatus.delete(s); else activeStatus.add(s);
+  document.querySelectorAll('.ci[data-s]').forEach(el=>el.classList.toggle('on',activeStatus.has(el.dataset.s)));
+  document.querySelectorAll('.sfb[data-s]').forEach(el=>el.classList.toggle('on',activeStatus.has(el.dataset.s)));
+  renderAll();
+}
+function setType(t, btn) {
+  activeType=t;
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAll();
+}
+function setGrp(v) { activeGrp=v; renderAll(); }
+
+// ═══════════════════════════════════════════════════════
+// AUTO REFRESH
+// ═══════════════════════════════════════════════════════
+let autoOn=false, autoTimer=null, autoCount=0;
+const AUTO_SEC=300;
+
+function toggleAuto() {
+  autoOn=!autoOn;
+  document.getElementById('tog-track').classList.toggle('on',autoOn);
+  document.getElementById('auto-dot').classList.toggle('on',autoOn);
+  if (autoOn) {
+    autoCount=AUTO_SEC;
+    clearInterval(autoTimer);
+    autoTimer=setInterval(()=>{
+      autoCount--;
+      const m=Math.floor(autoCount/60), s=autoCount%60;
+      document.getElementById('auto-cd').textContent = m>0?`${m}:${String(s).padStart(2,'0')}`:`${s}s`;
+      if (autoCount<=0) { autoCount=AUTO_SEC; loadData(); }
+    },1000);
+  } else {
+    clearInterval(autoTimer); autoTimer=null;
+    document.getElementById('auto-cd').textContent='';
+  }
+}
+
+function manualRefresh() { if(autoOn) autoCount=AUTO_SEC; loadData(); }
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load', async () => {
   initMap();
-  // Remove loading after max 3s regardless
   setTimeout(()=>{
     const ld=document.getElementById('ld');
     if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
-  },3000);
+  },3500);
   await loadData();
   const ld=document.getElementById('ld');
   if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
 });
 </script>
-<div id="custom-tt"><button id="custom-tt-close" onclick="closeTT()">×</button><div id="custom-tt-body"></div></div>
 </body>
 </html>
