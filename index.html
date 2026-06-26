@@ -162,7 +162,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div class="lb-ts">build 26/06/2026 16:29</div>
+  <div class="lb-ts">build 26/06/2026 16:37</div>
   <div class="lb-bar"><div class="lb-fill"></div></div>
 </div>
 
@@ -172,7 +172,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
       <div class="lsub">VMO</div>
-      <div class="lbuild">build 26/06/2026 16:29</div>
+      <div class="lbuild">build 26/06/2026 16:37</div>
     </div>
   </div>
   <div class="hr">
@@ -261,7 +261,76 @@ const SHEET = '1Fi9Y3aiAJdIaaAboqe2eK_g95YGHXppV';
 const SC = {'Saudável':'#22c55e','Atenção':'#f59e0b','Crítico':'#ef4444','':'#4b5a6b'};
 const BZ_BOUNDS = [[-33.75,-73.99],[5.27,-28.65]];
 
-// Real geographic coordinates
+
+// Coordinates by "Cidade/UF" — used when spreadsheet has cidade column filled
+const GEOCITY = {
+  // SP region
+  'Ribeirão Preto/SP':       [-21.1775,-47.8103],
+  'São Paulo/SP':            [-23.5505,-46.6333],
+  'São Bernardo do Campo/SP':[-23.6939,-46.5650],
+  'Barueri/SP':              [-23.5044,-46.8757],
+  'Indaiatuba/SP':           [-23.0903,-47.2186],
+  'Sorocaba/SP':             [-23.5015,-47.4526],
+  'Jundiaí/SP':              [-23.1864,-46.8844],
+  'Campinas/SP':             [-22.9099,-47.0626],
+  // MG
+  'Belo Horizonte/MG':       [-19.9167,-43.9345],
+  'Uberlândia/MG':           [-18.9186,-48.2772],
+  'Montes Claros/MG':        [-16.7281,-43.8614],
+  'Pouso Alegre/MG':         [-22.2297,-45.9359],
+  'Juiz de Fora/MG':         [-21.7642,-43.3503],
+  // RJ
+  'Rio de Janeiro/RJ':       [-22.9068,-43.1729],
+  'Niterói/RJ':              [-22.8833,-43.1036],
+  // PR
+  'Curitiba/PR':             [-25.4284,-49.2733],
+  'Londrina/PR':             [-23.3045,-51.1696],
+  'Bandeirantes/PR':         [-23.1072,-50.3620],
+  'Maringá/PR':              [-23.4273,-51.9375],
+  // SC
+  'Florianópolis/SC':        [-27.5954,-48.5480],
+  'Joinville/SC':            [-26.3044,-48.8487],
+  'Balneário Camboriú/SC':   [-26.9903,-48.6349],
+  'Blumenau/SC':             [-26.9194,-49.0661],
+  // RS
+  'Porto Alegre/RS':         [-30.0346,-51.2177],
+  'Caxias do Sul/RS':        [-29.1678,-51.1794],
+  // BA
+  'Salvador/BA':             [-12.9714,-38.5014],
+  'Vitória da Conquista/BA': [-14.8661,-40.8444],
+  'Feira de Santana/BA':     [-12.2664,-38.9663],
+  // CE
+  'Fortaleza/CE':            [-3.7172,-38.5433],
+  // RN
+  'Natal/RN':                [-5.7945,-35.2110],
+  // PE
+  'Recife/PE':               [-8.0539,-34.8811],
+  'Caruaru/PE':              [-8.2760,-35.9769],
+  // MA
+  'São Luís/MA':             [-2.5297,-44.3028],
+  // PA
+  'Belém/PA':                [-1.4558,-48.4902],
+  // MT
+  'Cuiabá/MT':               [-15.6010,-56.0974],
+  // MS
+  'Campo Grande/MS':         [-20.4697,-54.6201],
+  // GO
+  'Goiânia/GO':              [-16.6864,-49.2643],
+  // DF
+  'Brasília/DF':             [-15.7801,-47.9292],
+  // ES
+  'Vitória/ES':              [-20.3155,-40.3128],
+  // AL
+  'Maceió/AL':               [-9.6658,-35.7350],
+  // SE
+  'Aracaju/SE':              [-10.9472,-37.0731],
+  // RO
+  'Porto Velho/RO':          [-8.7612,-63.9004],
+  // AM
+  'Manaus/AM':               [-3.1190,-60.0217],
+};
+
+// Real geographic coordinates (fallback by nome)
 const GEO = {
   'BP SP MOEMA':           [-23.598,-46.655],
   'BP SÃO PAULO BERRINI':  [-23.597,-46.692],
@@ -332,7 +401,7 @@ const PX_OFF = {
   'BP ALPHAVILLE':         [-14, 8],'BP JUNDIAÍ':           [-14,-8],
   // SC/PR quad
   'BP CURITIBA':           [-12,-12],'BP NORTE CATARINENSE': [12,-12],
-  'BP LITORAL CATARINENSE':[12, 12],'BP SANTA CATARINA':    [-12,12],
+  'BP LITORAL CATARINENSE':[-8, 12],'BP SANTA CATARINA':    [-12,12],
   // DCs pentagon
   'Delivery Center - Andreia':    [ 0,-16],'Delivery Center - Kassius':    [15,-5],
   'Delivery Center - Carol':      [10, 13],'Delivery Center - Enterprise': [-10,13],
@@ -457,9 +526,12 @@ async function loadData() {
       );
       if (rows.length >= 5) {
         allU = rows.map(r => ({
-          nome: r[1]?.trim(), tipo: r[2]?.trim()||'BP',
-          grp:  r[3]?.trim()||'', termo: r[4]?.trim()||'',
-          obs:  r[5]?.trim()||'',
+          nome:   r[1]?.trim(),
+          tipo:   r[2]?.trim()||'BP',
+          grp:    r[3]?.trim()||'',
+          termo:  r[4]?.trim()||'',
+          obs:    r[5]?.trim()||'',
+          cidade: r[6]?.trim()||'',  // coluna G — cidade/estado
         }));
         showStatus('ok');
         loaded = true;
@@ -568,7 +640,8 @@ function renderAll() {
     el.onclick = () => {
       hlUnit = hlUnit===u.nome ? null : u.nome;
       document.querySelectorAll('.ui').forEach(e=>e.classList.toggle('hl',e.dataset.nome===hlUnit));
-      const geo=GEO[u.nome]; if(geo) map.setView(geo,7,{animate:true,duration:.4});
+      const geo=(u.cidade&&GEOCITY[u.cidade])?GEOCITY[u.cidade]:GEO[u.nome];
+      if(geo) map.setView(geo,7,{animate:true,duration:.4});
       const mk=mkMap[u.nome];
       if(mk){ if(pinnedMk&&pinnedMk!==mk) pinnedMk._pinned=false; mk._pinned=true; pinnedMk=mk;
         const r=mk.getElement()?.getBoundingClientRect()||{left:window.innerWidth/2,top:300,width:0};
@@ -583,7 +656,9 @@ function renderAll() {
 // ═══════════════════════════════════════════════════════
 function createAllMarkers() {
   allU.forEach(u => {
-    const geo = GEO[u.nome]; if(!geo) return;
+    // Use cidade column if available, otherwise fall back to nome-based GEO
+    const geo = (u.cidade && GEOCITY[u.cidade]) ? GEOCITY[u.cidade] : GEO[u.nome];
+    if(!geo) return;
     if (mkMap[u.nome]) {
       mkMap[u.nome].setIcon(makeIcon(u));
       return;
@@ -614,7 +689,7 @@ function showTT(u, cx, cy) {
   clearTimeout(hideTTTimer);
   const col = SC[u.termo]||SC[''];
   const sl = u.termo||'Sem status';
-  const city = CITY[u.nome]||'';
+  const city = (u.cidade && u.cidade.length>1) ? u.cidade : (CITY[u.nome]||'');
   document.getElementById('ctt-body').innerHTML = `
     <div class="tt-nm">${u.nome}</div>
     <div class="tt-pills"><span class="tt-pi ${u.tipo==='DC'?'pi-dc':'pi-bp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
