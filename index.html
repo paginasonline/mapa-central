@@ -162,7 +162,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div class="lb-ts">build 26/06/2026 16:37</div>
+  <div class="lb-ts">build 26/06/2026 16:38</div>
   <div class="lb-bar"><div class="lb-fill"></div></div>
 </div>
 
@@ -172,7 +172,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
       <div class="lsub">VMO</div>
-      <div class="lbuild">build 26/06/2026 16:37</div>
+      <div class="lbuild">build 26/06/2026 16:38</div>
     </div>
   </div>
   <div class="hr">
@@ -457,7 +457,10 @@ function makeIcon(u) {
   const col = SC[u.termo] || SC[''];
   const isDC = u.tipo === 'DC';
   const isCritico = u.termo === 'Crítico';
-  const rot = PIN_ROT[u.nome] || 0;
+  const baseRot = PIN_ROT[u.nome] || 0;
+  // Rotation fades out as zoom increases — only needed when pins overlap
+  const rotFactor = z<=4?1.0 : z<=5?0.6 : z<=6?0.2 : 0;
+  const rot = Math.round(baseRot * rotFactor);
 
   // Size grows with zoom
   const z = map ? map.getZoom() : 4;
