@@ -270,7 +270,7 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:19</div>
+  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:22</div>
   <div class="lbar"><div class="lfill"></div></div>
 </div>
 
@@ -279,7 +279,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:19</span></div>
+      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:22</span></div>
     </div>
   </div>
   <div class="hr">
@@ -679,8 +679,13 @@ function makeIcon(u){
       <div class="pin-stem" style="height:${stem}px;background:${col}"></div>
       <div class="pin-shadow"></div>
     </div>`,
+    // Scale pixel offset by zoom — small offset when zoomed out
+    const _off=PX_OFF[u.nome]||[0,0];
+    const _f=z<=4?0.45:z<=5?0.75:z<=6?0.9:1.0;
+    const _dx=Math.round(_off[0]*_f);
+    const _dy=Math.round(_off[1]*_f);
     iconSize:[totalH,totalH],
-    iconAnchor:[Math.round(totalH/2)-(PX_OFF[u.nome]?PX_OFF[u.nome][0]:0), totalH-1-(PX_OFF[u.nome]?PX_OFF[u.nome][1]:0)],
+    iconAnchor:[Math.round(totalH/2)-_dx, totalH-1-_dy],
     popupAnchor:[0,-totalH],
   });
 }
