@@ -162,7 +162,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div class="lb-ts">build 26/06/2026 16:38</div>
+  <div class="lb-ts">build 26/06/2026 16:41</div>
   <div class="lb-bar"><div class="lb-fill"></div></div>
 </div>
 
@@ -172,7 +172,7 @@ header{height:64px;display:flex;align-items:center;justify-content:space-between
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
       <div class="lsub">VMO</div>
-      <div class="lbuild">build 26/06/2026 16:38</div>
+      <div class="lbuild">build 26/06/2026 16:41</div>
     </div>
   </div>
   <div class="hr">
@@ -522,19 +522,34 @@ async function loadData() {
   for (const fn of strategies) {
     try {
       const txt = await fn();
-      const rows = parseCSV(txt).filter(r =>
-        r[1] && r[1].trim() && r[1].trim() !== 'Unidade' &&
-        r[0].trim() !== '#' && !r[1].includes('<') &&
-        r[1].trim().length < 60 && !isNaN(Number(r[0].trim()))
-      );
+      const rows = parseCSV(txt).filter(r => {
+        const nome = r[1]?.trim()||'';
+        const num = r[0]?.trim()||'';
+        return nome && nome !== 'Unidade' && nome !== 'Cidade' &&
+               !nome.includes('<') && nome.length < 80 &&
+               (nome.startsWith('BP') || nome.startsWith('Delivery')) &&
+               (num === '' || !isNaN(Number(num)));
+      });
       if (rows.length >= 5) {
+        // Find column index by header name (robust to column reordering)
+        const header = parseCSV(txt)[0] || [];
+        const iNome   = header.findIndex(c => c.trim()==='Unidade');
+        const iTipo   = header.findIndex(c => c.trim()==='Tipo');
+        const iGrp    = header.findIndex(c => c.trim()==='GRP');
+        const iTermo  = header.findIndex(c => c.trim()==='Termômetro');
+        const iObs    = header.findIndex(c => c.trim()==='Comentários');
+        const iCidade = header.findIndex(c => c.trim()==='Cidade');
+        // Fallback to fixed indices if headers not found
+        const _n = iNome>=0?iNome:1, _t=iTipo>=0?iTipo:2, _g=iGrp>=0?iGrp:3;
+        const _e = iTermo>=0?iTermo:4, _o=iObs>=0?iObs:5, _c=iCidade>=0?iCidade:-1;
+
         allU = rows.map(r => ({
-          nome:   r[1]?.trim(),
-          tipo:   r[2]?.trim()||'BP',
-          grp:    r[3]?.trim()||'',
-          termo:  r[4]?.trim()||'',
-          obs:    r[5]?.trim()||'',
-          cidade: r[6]?.trim()||'',  // coluna G — cidade/estado
+          nome:   r[_n]?.trim(),
+          tipo:   r[_t]?.trim()||'BP',
+          grp:    r[_g]?.trim()||'',
+          termo:  r[_e]?.trim()||'',
+          obs:    r[_o]?.trim()||'',
+          cidade: _c>=0 ? (r[_c]?.trim()||'') : '',
         }));
         showStatus('ok');
         loaded = true;
