@@ -278,7 +278,7 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:03</div>
+  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:06</div>
   <div class="lbar"><div class="lfill"></div></div>
 </div>
 
@@ -287,7 +287,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:03</span></div>
+      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:06</span></div>
     </div>
   </div>
   <div class="hr">
@@ -439,26 +439,34 @@ const GEO_ROT={
 // Pixel offsets por cluster — separa visualmente sem mover coordenada
 // [dx, dy] em pixels. Reduz com o zoom.
 const CLUSTER_OFFSET={
-  // SP hexágono
-  'BP SP MOEMA':           [ 0,-42],
-  'BP SÃO PAULO BERRINI':  [ 36,-21],
-  'BP ABC PAULISTA':       [ 36, 21],
-  'BP SUDESTE PAULISTA':   [ 0, 42],
-  'BP ALPHAVILLE':         [-36, 21],
-  'BP JUNDIAÍ':            [-36,-21],
-  // SC/PR quadrado
-  'BP CURITIBA':           [-28,-28],
-  'BP NORTE CATARINENSE':  [ 28,-28],
-  'BP LITORAL CATARINENSE':[ 28, 28],
-  'BP SANTA CATARINA':     [-28, 28],
-  // DCs pentágono
-  'Delivery Center - Andreia':    [  0,-36],
-  'Delivery Center - Kassius':    [ 34,-11],
-  'Delivery Center - Carol':      [ 21, 29],
-  'Delivery Center - Enterprise': [-21, 29],
-  'Delivery Center - Thiago':     [-34,-11],
+  // SP hexágono — 22px max
+  'BP SP MOEMA':           [  0,-22],
+  'BP SÃO PAULO BERRINI':  [ 19,-11],
+  'BP ABC PAULISTA':       [ 19, 11],
+  'BP SUDESTE PAULISTA':   [  0, 22],
+  'BP ALPHAVILLE':         [-19, 11],
+  'BP JUNDIAÍ':            [-19,-11],
+  // SC/PR — 18px max
+  'BP CURITIBA':           [-18,-18],
+  'BP NORTE CATARINENSE':  [ 18,-18],
+  'BP LITORAL CATARINENSE':[ 18, 18],
+  'BP SANTA CATARINA':     [-18, 18],
+  // DCs Uberlândia — 20px max
+  'Delivery Center - Andreia':    [  0,-20],
+  'Delivery Center - Kassius':    [ 19, -6],
+  'Delivery Center - Carol':      [ 12, 16],
+  'Delivery Center - Enterprise': [-12, 16],
+  'Delivery Center - Thiago':     [-19, -6],
 };
 
+// Fator diminui com zoom: zoom4=1.0, zoom5=0.6, zoom6=0.2, zoom7+=0
+function getOffsetFactor(){
+  const z=map?map.getZoom():4;
+  if(z<=4) return 1.0;
+  if(z<=5) return 0.6;
+  if(z<=6) return 0.2;
+  return 0;
+}
 // Retorna fator de offset baseado no zoom atual
 function getOffsetFactor(){
   const z=map?map.getZoom():4;
