@@ -101,6 +101,8 @@ header{
 }
 @keyframes dotpulse{0%,100%{box-shadow:0 0 8px var(--cc),0 0 16px color-mix(in srgb,var(--cc) 30%,transparent)}50%{box-shadow:0 0 14px var(--cc),0 0 28px color-mix(in srgb,var(--cc) 50%,transparent)}}
 .clb{font-size:15px;color:var(--t2);font-weight:400;letter-spacing:.01em}
+.cright{display:flex;flex-direction:column;align-items:flex-end;margin-left:auto;gap:2px}
+.cpct{font-size:20px;font-weight:600;font-family:'DM Mono',monospace;color:var(--cc);opacity:.7;letter-spacing:-.5px;line-height:1}
 .cv{
   font-size:46px;font-weight:700;
   color:var(--cc);font-family:'DM Mono',monospace;
@@ -173,6 +175,7 @@ header{
 
 /* MAP */
 .ma{flex:1;position:relative;overflow:hidden}
+.ma::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);/* scanline */}
 #map{width:100%;height:100%}
 /* Tiles bem escuros pra contrastar com os pins coloridos */
 .leaflet-tile{filter:brightness(.38) saturate(.25) hue-rotate(100deg) contrast(1.05)}
@@ -189,6 +192,11 @@ header{
 .cmap-center{border-top:1px solid var(--b);margin-top:2px}
 .leaflet-container{background:#030806}
 .leaflet-control-zoom{display:none}
+.ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
+.cbtn{width:34px;height:34px;background:var(--bg2);border:1px solid var(--b2);color:var(--gl);border-radius:8px;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.cbtn:hover{background:var(--s2);color:#fff;border-color:var(--gl)}
+.cbtn:active{transform:scale(.92)}
+.cbtn-c{font-size:14px;border-top:1px solid var(--b);padding-top:5px;margin-top:3px}
 .ctrlbox{display:flex;flex-direction:column;gap:5px;margin:14px 0 0 14px}
 .cbtn{
   width:34px;height:34px;background:var(--bg2);border:1px solid var(--b2);
@@ -248,27 +256,11 @@ header{
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
 }
 
-/* ── CUSTOM FIXED TOOLTIP ── */
-#custom-tt{
-  position:fixed;z-index:99999;
-  background:rgba(4,9,5,.97);
-  border:1px solid rgba(28,140,82,.5);
-  border-radius:14px;
-  box-shadow:0 20px 60px rgba(0,0,0,.85);
-  padding:16px 18px;
-  min-width:240px;max-width:280px;
-  max-height:calc(100vh - 24px);
-  overflow-y:auto;
-  display:none;pointer-events:auto;color:var(--t);
-}
+#custom-tt{position:fixed;z-index:99999;background:rgba(4,9,5,.97);border:1px solid rgba(28,140,82,.5);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.85);padding:16px 18px;min-width:240px;max-width:280px;max-height:calc(100vh - 24px);overflow-y:auto;display:none;pointer-events:auto;color:var(--t)}
 #custom-tt.show{display:block}
 #custom-tt::-webkit-scrollbar{width:3px}
 #custom-tt::-webkit-scrollbar-thumb{background:rgba(28,140,82,.3);border-radius:3px}
-#custom-tt-close{
-  position:absolute;top:10px;right:12px;
-  background:none;border:none;color:var(--t3);
-  font-size:20px;cursor:pointer;line-height:1;padding:0
-}
+#custom-tt-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;line-height:1;padding:0}
 #custom-tt-close:hover{color:var(--gl)}
 .leaflet-popup{display:none!important}
 </style>
@@ -278,7 +270,7 @@ header{
 <div id="ld">
   <div class="ll">SANKHYA</div>
   <div class="ls">MAPA DE SAÚDE VMO</div>
-  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:06</div>
+  <div style="font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-top:-24px;margin-bottom:24px;opacity:.5">build 26/06/2026 16:16</div>
   <div class="lbar"><div class="lfill"></div></div>
 </div>
 
@@ -287,7 +279,7 @@ header{
     <div class="logo">S</div>
     <div>
       <div class="ln">Sankhya · Mapa de Saúde VMO</div>
-      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:06</span></div>
+      <div class="lsub">VMO &nbsp;·&nbsp; <span style="opacity:.5;font-size:10px">build 26/06/2026 16:16</span></div>
     </div>
   </div>
   <div class="hr">
@@ -301,10 +293,7 @@ header{
       </div>
       <span class="auto-cd" id="auto-cd"></span>
     </label>
-    <div id="last-upd" style="
-  display:flex;flex-direction:column;align-items:flex-end;gap:1px;
-  font-family:'DM Mono',monospace;line-height:1.3
-">
+    <div id="last-upd" style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:'DM Mono',monospace;line-height:1.3">
   <span style="font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase">Última leitura</span>
   <span id="last-upd-val" style="font-size:13px;color:var(--t2)">—</span>
 </div>
@@ -391,25 +380,21 @@ const SHEET='1Fi9Y3aiAJdIaaAboqe2eK_g95YGHXppV';
 const SC={'Saudável':'#22c55e','Atenção':'#f59e0b','Crítico':'#ef4444','':'#475569'};
 
 const GEO={
-  // SP region — coordenadas REAIS
   'BP SP MOEMA':           [-23.598,-46.655],
   'BP SÃO PAULO BERRINI':  [-23.597,-46.692],
   'BP ABC PAULISTA':       [-23.710,-46.533],
   'BP SUDESTE PAULISTA':   [-23.502,-47.458],
   'BP ALPHAVILLE':         [-23.493,-46.852],
   'BP JUNDIAÍ':            [-23.186,-46.884],
-  // SC/PR region — coordenadas REAIS
   'BP CURITIBA':           [-25.428,-49.273],
   'BP NORTE CATARINENSE':  [-26.304,-48.849],
   'BP LITORAL CATARINENSE':[-27.003,-48.636],
   'BP SANTA CATARINA':     [-27.597,-48.549],
-  // DCs Uberlândia — coordenada REAL (mesma para todos)
   'Delivery Center - Andreia':    [-18.918,-48.277],
   'Delivery Center - Kassius':    [-18.918,-48.277],
   'Delivery Center - Carol':      [-18.918,-48.277],
   'Delivery Center - Enterprise': [-18.918,-48.277],
   'Delivery Center - Thiago':     [-18.918,-48.277],
-  // Individuais — coordenadas reais
   'BP RECIFE':                [-8.054,-34.881],
   'BP VITORIA DA CONQUISTA':  [-14.866,-40.839],
   'BP BANDEIRANTES':          [-23.107,-50.353],
@@ -426,56 +411,25 @@ const GEO={
   'BP RIO GRANDE DO NORTE':   [-5.793,-35.209],
 };
 const GEO_ROT={
-  // Pin tilt angles
-  'BP SP MOEMA':0,'BP SÃO PAULO BERRINI':30,'BP ABC PAULISTA':60,
-  'BP SUDESTE PAULISTA':0,'BP ALPHAVILLE':-60,'BP JUNDIAÍ':-30,
-  'BP CURITIBA':-25,'BP NORTE CATARINENSE':25,
-  'BP LITORAL CATARINENSE':25,'BP SANTA CATARINA':-25,
-  'Delivery Center - Andreia':0,'Delivery Center - Kassius':20,
-  'Delivery Center - Carol':35,'Delivery Center - Enterprise':-35,
+  // SP hexágono — each pin leans outward from SP center
+  'BP SP MOEMA':0,           // top — straight up
+  'BP SÃO PAULO BERRINI':30, // top-right — lean right
+  'BP ABC PAULISTA':60,      // bottom-right — lean more right  
+  'BP SUDESTE PAULISTA':0,   // bottom — straight (inverted via position)
+  'BP ALPHAVILLE':-60,       // bottom-left — lean left
+  'BP JUNDIAÍ':-30,          // top-left — lean left
+  // SC/PR quad
+  'BP CURITIBA':-25,
+  'BP NORTE CATARINENSE':25,
+  'BP LITORAL CATARINENSE':25,
+  'BP SANTA CATARINA':-25,
+  // DCs pentagon
+  'Delivery Center - Andreia':0,
+  'Delivery Center - Kassius':20,
+  'Delivery Center - Carol':35,
+  'Delivery Center - Enterprise':-35,
   'Delivery Center - Thiago':-20,
 };
-
-// Pixel offsets por cluster — separa visualmente sem mover coordenada
-// [dx, dy] em pixels. Reduz com o zoom.
-const CLUSTER_OFFSET={
-  // SP hexágono — 22px max
-  'BP SP MOEMA':           [  0,-22],
-  'BP SÃO PAULO BERRINI':  [ 19,-11],
-  'BP ABC PAULISTA':       [ 19, 11],
-  'BP SUDESTE PAULISTA':   [  0, 22],
-  'BP ALPHAVILLE':         [-19, 11],
-  'BP JUNDIAÍ':            [-19,-11],
-  // SC/PR — 18px max
-  'BP CURITIBA':           [-18,-18],
-  'BP NORTE CATARINENSE':  [ 18,-18],
-  'BP LITORAL CATARINENSE':[ 18, 18],
-  'BP SANTA CATARINA':     [-18, 18],
-  // DCs Uberlândia — 20px max
-  'Delivery Center - Andreia':    [  0,-20],
-  'Delivery Center - Kassius':    [ 19, -6],
-  'Delivery Center - Carol':      [ 12, 16],
-  'Delivery Center - Enterprise': [-12, 16],
-  'Delivery Center - Thiago':     [-19, -6],
-};
-
-// Fator diminui com zoom: zoom4=1.0, zoom5=0.6, zoom6=0.2, zoom7+=0
-function getOffsetFactor(){
-  const z=map?map.getZoom():4;
-  if(z<=4) return 1.0;
-  if(z<=5) return 0.6;
-  if(z<=6) return 0.2;
-  return 0;
-}
-// Retorna fator de offset baseado no zoom atual
-function getOffsetFactor(){
-  const z=map?map.getZoom():4;
-  if(z<=4) return 1.0;
-  if(z<=5) return 0.5;
-  if(z<=6) return 0.15;
-  return 0; // zoom alto = coordenada real, sem offset
-}
-
 
 
 const CITY={
@@ -483,7 +437,7 @@ const CITY={
   'BP ABC PAULISTA':'Santo André','BP ALPHAVILLE':'Alphaville','BP BANDEIRANTES':'Bandeirantes',
   'BP BH PAMPULHA':'Belo Horizonte','BP JUNDIAÍ':'Jundiaí','BP SUDESTE PAULISTA':'Sorocaba',
   'BP SÃO PAULO BERRINI':'São Paulo','BP CEARÁ':'Fortaleza','BP MARANHÃO':'São Luís',
-  'BP CENTRO NORTE':'Belém','BP RIO DE JANEIRO':'Rio de Janeiro','BP CURITIBA':'Curitiba',
+  'BP PARÁ':'Belém','BP RIO DE JANEIRO':'Rio de Janeiro','BP CURITIBA':'Curitiba',
   'BP INTERIOR PARANAENSE':'Londrina','BP LITORAL CATARINENSE':'Balneário Camboriú',
   'BP MATO GROSSO':'Cuiabá','BP MATO GROSSO DO SUL':'Campo Grande',
   'BP NORTE CATARINENSE':'Joinville','BP NORTE DE MINAS':'Montes Claros',
@@ -497,48 +451,37 @@ let allU=[],aS=new Set(),aT='ALL',aG='ALL',hl=null;
 let map, mkMap={};
 let openPopup=null; // controla qual popup está aberto
 
+const BZ=[[-33.75,-73.99],[5.27,-28.65]];
 function initMap(){
   map=L.map('map',{center:[-15.0,-53.0],zoom:4,zoomControl:false,minZoom:3,maxZoom:13});
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19
   }).addTo(map);
-  map.on('click',()=>closeTT());
-  // Re-render markers on zoom to update offsets
-  map.on('zoomend',()=>{
-    const vis=getVis();
-    allU.forEach(u=>{
-      const mk=mkMap[u.nome];if(!mk)return;
-      mk.setIcon(makeIcon(u));
-    });
-  });
-  // Fit Brazil fully visible
-  setTimeout(()=>map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28]}),200);
-  // Custom controls: zoom + recenter
+  setTimeout(()=>map.fitBounds(BZ,{padding:[24,24]}),200);
   const ctrl=L.control({position:'topleft'});
   ctrl.onAdd=function(){
     const d=L.DomUtil.create('div','ctrlbox');
     d.innerHTML=
-      '<button class="cbtn" onclick="map.zoomIn()" title="Aproximar">+</button>'+
-      '<button class="cbtn" onclick="map.zoomOut()" title="Afastar">−</button>'+
-      '<button class="cbtn cbtn-c" onclick="recenter()" title="Ver Brasil completo">'+
-        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+
-          '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>'+
-          '<line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'+
-        '</svg>'+
+      '<button class="cbtn" onclick="map.zoomIn()">+</button>'+
+      '<button class="cbtn" onclick="map.zoomOut()">−</button>'+
+      '<button class="cbtn cbtn-c" onclick="map.fitBounds(BZ,{padding:[24,24],animate:true})" title="Ver Brasil">'+
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'+
       '</button>';
     L.DomEvent.disableClickPropagation(d);
     return d;
   };
   ctrl.addTo(map);
-}
+  map.on('click',()=>closeTT());
+  map.on('zoomend',()=>{
+    allU.forEach(u=>{const mk=mkMap[u.nome];if(mk)mk.setIcon(makeIcon(u));});
+  });
+  // Fit Brazil fully visible
+  setTimeout(()=>map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28]}),200);
+  // Custom controls: zoom + recenter
+  }
 
-function recenter(){
-  map.fitBounds([[-33.75,-73.99],[5.27,-28.65]],{padding:[28,28],animate:true});
-}
 
-function closeOpenPopup(){
-  if(openPopup){ openPopup.closePopup(); openPopup=null; }
-}
+function closeOpenPopup(){closeTT();}
 
 async function loadData(){
   const si=document.getElementById('si');
@@ -695,31 +638,26 @@ function makeIcon(u){
   const col=SC[u.termo]||SC[''];
   const isDC=u.tipo==='DC';
   const isCritico=u.termo==='Crítico';
-  const fs=24, stemH=18;
   const rot=GEO_ROT[u.nome]||0;
-  const totalH=fs+stemH+8;
-  const totalW=fs+8;
-  // Pixel offset para separar clusters — diminui com zoom
-  const off=CLUSTER_OFFSET[u.nome];
-  const factor=getOffsetFactor();
-  const dx=off?Math.round(off[0]*factor):0;
-  const dy=off?Math.round(off[1]*factor):0;
-  // iconAnchor: ponto de ancoragem = base do pin - offset
-  const ancX=Math.round(totalH/2)-dx;
-  const ancY=totalH-2-dy;
+  // Pin size grows with zoom
+  const z=map?map.getZoom():4;
+  const fs = z<=4?13 : z<=5?17 : z<=6?20 : z<=7?23 : 26;
+  const stem = z<=4?9  : z<=5?12 : z<=6?14 : z<=7?16 : 18;
+  const totalH=fs+stem+5;
+  const showLabel = fs>=17;
 
   return L.divIcon({
     className:'',
     html:`<div class="pin-wrap${isCritico?' pin-critico':''}"
       style="width:${totalH}px;height:${totalH}px;align-items:center;transform-origin:bottom center;transform:rotate(${rot}deg)">
       <div class="pin-flag" style="width:${fs}px;height:${fs}px;background:${col};color:${col}">
-        <span class="pin-flag-inner" style="font-size:${isDC?'6.5':'7'}px;letter-spacing:.02em;transform:rotate(${45-rot}deg)">${isDC?'DC':'BP'}</span>
+        <span class="pin-flag-inner" style="font-size:${Math.max(6,Math.round(fs*0.32))}px;transform:rotate(${45-rot}deg)">${showLabel?(isDC?'DC':'BP'):''}</span>
       </div>
-      <div class="pin-stem" style="height:${stemH}px;background:${col}"></div>
+      <div class="pin-stem" style="height:${stem}px;background:${col}"></div>
       <div class="pin-shadow"></div>
     </div>`,
     iconSize:[totalH,totalH],
-    iconAnchor:[ancX,ancY],
+    iconAnchor:[Math.round(totalH/2),totalH-1],
     popupAnchor:[0,-totalH],
   });
 }
@@ -762,37 +700,19 @@ function createAllMarkers(){
       zIndexOffset:u.termo==='Crítico'?200:100
     }).addTo(map);
 
-    mk.bindPopup(buildPopup(u),{
-      maxWidth:270,minWidth:230,
-      closeButton:true,
-      autoClose:false,
-      closeOnClick:false,
-      autoPan:false,
-    });
+    // tooltip handled by custom-tt
 
-    mk.on('mouseover',function(e){
-      showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
-    });
-    mk.on('mousemove',function(e){
-      if(!this._pinned){
-        showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
-      }
-    });
-    mk.on('mouseout',function(){
-      if(!this._pinned){
-        hideTTTimer=setTimeout(closeTT,250);
-      }
-    });
+    mk.on('mouseover',function(e){showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);});
+    mk.on('mousemove',function(e){if(!this._pinned)showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);});
+    mk.on('mouseout',function(){if(!this._pinned){hideTTTimer=setTimeout(closeTT,250);}});
     mk.on('click',function(e){
       L.DomEvent.stopPropagation(e);
-      if(this._pinned){
-        this._pinned=false; pinnedMk=null; closeTT();
-      } else {
-        if(pinnedMk && pinnedMk!==this){pinnedMk._pinned=false;}
-        this._pinned=true; pinnedMk=this;
-        showTT(u, e.originalEvent.clientX, e.originalEvent.clientY);
-        hlItem(u.nome);
-        map.setView(geo,7,{animate:true,duration:.4});
+      if(this._pinned){this._pinned=false;pinnedMk=null;closeTT();}
+      else{
+        if(pinnedMk&&pinnedMk!==this)pinnedMk._pinned=false;
+        this._pinned=true;pinnedMk=this;
+        showTT(u,e.originalEvent.clientX,e.originalEvent.clientY);
+        hlItem(u.nome);map.setView(geo,7,{animate:true,duration:.4});
       }
     });
 
@@ -803,34 +723,23 @@ function createAllMarkers(){
 function renderAll(){
   const vis=getVis();
   document.getElementById('vc').textContent=vis.size;
-
-  // Atualiza contadores do topo com base nos filtros ativos
   const visArr=[...vis].map(n=>allU.find(u=>u.nome===n)).filter(Boolean);
-  const s=visArr.filter(u=>u.termo==='Saudável').length;
-  const a=visArr.filter(u=>u.termo==='Atenção').length;
-  const c=visArr.filter(u=>u.termo==='Crítico').length;
-  const n=visArr.filter(u=>!u.termo).length;
+  const sv=visArr.filter(u=>u.termo==='Saudável').length;
+  const at=visArr.filter(u=>u.termo==='Atenção').length;
+  const cr=visArr.filter(u=>u.termo==='Crítico').length;
+  const ns=visArr.filter(u=>!u.termo).length;
   const tot=vis.size;
   const pct=v=>tot>0?Math.round(v/tot*100)+'%':'—';
-  document.getElementById('csv').textContent=s;
-  document.getElementById('cat').textContent=a;
-  document.getElementById('ccr').textContent=c;
-  document.getElementById('cns').textContent=n;
+  ['csv','fcs'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=sv;});
+  ['cat','fca'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=at;});
+  ['ccr','fcc'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=cr;});
+  ['cns','fcn'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=ns;});
   document.getElementById('ctot').textContent=tot;
-  document.getElementById('pcsv').textContent=pct(s);
-  document.getElementById('pcat').textContent=pct(a);
-  document.getElementById('pccr').textContent=pct(c);
-  document.getElementById('pcns').textContent=pct(n);
-  // sidebar counts + progress bars
-  document.getElementById('fcs').textContent=s;
-  document.getElementById('fca').textContent=a;
-  document.getElementById('fcc').textContent=c;
-  document.getElementById('fcn').textContent=n;
+  ['pcsv','fcs'].forEach(()=>{});
+  const setPct=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=pct(v);};
+  setPct('pcsv',sv);setPct('pcat',at);setPct('pccr',cr);setPct('pcns',ns);
   const setBar=(sel,v)=>{const el=document.querySelector(sel);if(el)el.style.setProperty('--bar-w',(tot>0?Math.round(v/tot*100):0)+'%');};
-  setBar('.sfb[data-s="Saudável"]',s);
-  setBar('.sfb[data-s="Atenção"]',a);
-  setBar('.sfb[data-s="Crítico"]',c);
-  setBar('.sfb[data-s=""]',n);
+  setBar('.sfb[data-s="Saudável"]',sv);setBar('.sfb[data-s="Atenção"]',at);setBar('.sfb[data-s="Crítico"]',cr);setBar('.sfb[data-s=""]',ns);
 
   allU.forEach(u=>{
     const mk=mkMap[u.nome];if(!mk)return;
@@ -863,15 +772,9 @@ function renderList(vis){
       const geo=GEO[u.nome];
       if(geo)map.setView(geo,7,{animate:true,duration:.4});
       const mk=mkMap[u.nome];
-      if(mk){
-        if(pinnedMk && pinnedMk!==mk) pinnedMk._pinned=false;
-        mk._pinned=true; pinnedMk=mk;
-        // simulate hover to show TT centered
-        const el=mk.getElement();
-        const rect=el?el.getBoundingClientRect():null;
-        const fakeEvt=rect?{clientX:rect.left+rect.width/2,clientY:rect.top}:null;
-        showTT(allU.find(x=>x.nome===u.nome)||allU[0], fakeEvt);
-      }
+      if(mk){if(pinnedMk&&pinnedMk!==mk)pinnedMk._pinned=false;mk._pinned=true;pinnedMk=mk;
+        const el=mk.getElement();const r=el?el.getBoundingClientRect():{left:window.innerWidth/2,top:200,width:0};
+        showTT(u,r.left+r.width/2,r.top);}
     };
     list.appendChild(el);
   });
@@ -960,10 +863,8 @@ function setT(t,b){aT=t;document.querySelectorAll('.tb').forEach(x=>x.classList.
 function setG(v){aG=v;renderAll();}
 
 
-// ── CUSTOM TOOLTIP ──────────────────────────────────────────
-let pinnedMk=null, hideTTTimer=null;
-
-function showTT(u, clientX, clientY){
+let pinnedMk=null,hideTTTimer=null;
+function showTT(u,cx,cy){
   clearTimeout(hideTTTimer);
   const col=SC[u.termo]||SC[''];
   const sl=u.termo||'Sem status';
@@ -973,25 +874,20 @@ function showTT(u, clientX, clientY){
     <div class="tpp"><span class="tpi ${u.tipo==='DC'?'pdc':'pbp'}">${u.tipo==='DC'?'Delivery Center':'Business Partner'}</span></div>
     <div class="trow">GRP: <span>${u.grp||'—'}</span></div>
     ${city?`<div class="trow" style="margin-bottom:6px">Cidade: <span>${city}</span></div>`:''}
-    <span class="tst" style="background:${col}22;color:${col}">
-      <span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}
-    </span>
+    <span class="tst" style="background:${col}22;color:${col}"><span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;flex-shrink:0"></span>${sl}</span>
     ${u.obs?`<div class="tob">${u.obs}</div>`:`<div class="tnob">Sem comentários.</div>`}`;
   const tt=document.getElementById('custom-tt');
   tt.classList.add('show');
-  // Position after render
   requestAnimationFrame(()=>{
-    const W=window.innerWidth, H=window.innerHeight;
-    const tw=tt.offsetWidth, th=tt.offsetHeight;
-    let x=clientX+16, y=clientY-th-16;
-    if(x+tw>W-12) x=clientX-tw-16;
-    if(x<8) x=8;
-    if(y<8) y=clientY+16;
-    if(y+th>H-8) y=H-th-8;
-    tt.style.left=x+'px'; tt.style.top=y+'px';
+    const W=window.innerWidth,H=window.innerHeight,tw=tt.offsetWidth,th=tt.offsetHeight;
+    let x=cx+16,y=cy-th-16;
+    if(x+tw>W-12)x=cx-tw-16;
+    if(x<8)x=8;
+    if(y<8)y=cy+16;
+    if(y+th>H-8)y=H-th-8;
+    tt.style.left=x+'px';tt.style.top=y+'px';
   });
 }
-
 function closeTT(){
   document.getElementById('custom-tt').classList.remove('show');
   if(pinnedMk){pinnedMk._pinned=false;pinnedMk=null;}
@@ -1009,9 +905,6 @@ window.addEventListener('load',async()=>{
   if(ld){ld.classList.add('out');setTimeout(()=>{try{ld.remove()}catch(e){}},500);}
 });
 </script>
-<div id="custom-tt">
-  <button id="custom-tt-close" onclick="closeTT()">×</button>
-  <div id="custom-tt-body"></div>
-</div>
+<div id="custom-tt"><button id="custom-tt-close" onclick="closeTT()">×</button><div id="custom-tt-body"></div></div>
 </body>
 </html>
